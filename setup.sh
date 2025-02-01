@@ -71,10 +71,20 @@ update_system() {
 
 # Main installation function
 main_install() {
-		# Your existing installation code here
+		# Check if already installed and prompt for reinstall
 		if [ -f "/etc/xray/domain" ]; then
-				echo "Script Already Installed"
-				exit 0
+				echo -e "${ORANGE}Script is already installed${NC}"
+				echo -n "Do you want to reinstall? (y/n): "
+				read answer
+				if [ "$answer" != "${answer#[Yy]}" ]; then
+						echo "Proceeding with reinstall..."
+						# Cleanup existing installation
+						rm -rf /etc/xray
+						rm -rf /var/lib/Abdofaizvpn
+				else
+						echo "Installation cancelled"
+						exit 0
+				fi
 		fi
 
 		mkdir -p /var/lib/Abdofaizvpn
