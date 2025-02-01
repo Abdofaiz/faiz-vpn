@@ -35,16 +35,16 @@ echo -ne "Select an option [0-10]: "
 read opt
 
 case $opt in
-    1) clear ; bash "$PROTO_DIR/ssh.sh" create ; exit ;;
-    2) clear ; bash "$PROTO_DIR/ssh.sh" trial ; exit ;;
-    3) clear ; bash "$PROTO_DIR/ssh.sh" renew ; exit ;;
-    4) clear ; bash "$PROTO_DIR/ssh.sh" delete ; exit ;;
-    5) clear ; bash "$PROTO_DIR/ssh.sh" check ; exit ;;
-    6) clear ; bash "$PROTO_DIR/ssh.sh" list ; exit ;;
-    7) clear ; bash "$PROTO_DIR/ssh.sh" expired ; exit ;;
-    8) clear ; bash "$PROTO_DIR/ssh.sh" autokill ; exit ;;
-    9) clear ; bash "$PROTO_DIR/ssh.sh" multi ; exit ;;
-    10) clear ; bash "$PROTO_DIR/ssh.sh" restart ; exit ;;
-    0) clear ; menu ;;
-    *) clear ; menu-ssh ;;
+    1) exec bash "$PROTO_DIR/ssh.sh" create ;;
+    2) exec bash "$PROTO_DIR/ssh.sh" trial ;;
+    3) exec bash "$PROTO_DIR/ssh.sh" renew ;;
+    4) exec bash "$PROTO_DIR/ssh.sh" delete ;;
+    5) exec bash "$PROTO_DIR/ssh.sh" check ;;
+    6) exec bash "$PROTO_DIR/ssh.sh" list ;;
+    7) exec bash "$PROTO_DIR/ssh.sh" expired ;;
+    8) exec bash "$PROTO_DIR/ssh.sh" autokill ;;
+    9) exec bash "$PROTO_DIR/ssh.sh" multi ;;
+    10) exec bash "$PROTO_DIR/ssh.sh" restart ;;
+    0) exec menu ;;
+    *) exec menu-ssh ;;
 esac 

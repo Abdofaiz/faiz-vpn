@@ -307,84 +307,59 @@ check_multi() {
     done < "$SSH_DB"
 }
 
+# Function to return to menu
+return_to_menu() {
+    echo -e ""
+    read -n 1 -s -r -p "Press any key to return to menu"
+    clear
+    exec menu-ssh
+}
+
 # Main script
 case "$1" in
     "create")
         create_account
-        echo -e ""
-        read -n 1 -s -r -p "Press any key to return to menu"
-        clear
-        menu-ssh
+        return_to_menu
         ;;
     "trial")
         trial_account
-        echo -e ""
-        read -n 1 -s -r -p "Press any key to return to menu"
-        clear
-        menu-ssh
+        return_to_menu
         ;;
     "renew")
         renew_account
-        echo -e ""
-        read -n 1 -s -r -p "Press any key to return to menu"
-        clear
-        menu-ssh
+        return_to_menu
         ;;
     "delete")
         delete_account
-        echo -e ""
-        read -n 1 -s -r -p "Press any key to return to menu"
-        clear
-        menu-ssh
+        return_to_menu
         ;;
     "list")
         list_members
-        echo -e ""
-        read -n 1 -s -r -p "Press any key to return to menu"
-        clear
-        menu-ssh
+        return_to_menu
         ;;
     "check")
         check_login
-        echo -e ""
-        read -n 1 -s -r -p "Press any key to return to menu"
-        clear
-        menu-ssh
+        return_to_menu
         ;;
     "expired")
         delete_expired
-        echo -e ""
-        read -n 1 -s -r -p "Press any key to return to menu"
-        clear
-        menu-ssh
+        return_to_menu
         ;;
     "autokill")
         setup_autokill
-        echo -e ""
-        read -n 1 -s -r -p "Press any key to return to menu"
-        clear
-        menu-ssh
+        return_to_menu
         ;;
     "multi")
         check_multi
-        echo -e ""
-        read -n 1 -s -r -p "Press any key to return to menu"
-        clear
-        menu-ssh
+        return_to_menu
         ;;
     "install")
         install_ssh
-        echo -e ""
-        read -n 1 -s -r -p "Press any key to return to menu"
-        clear
-        menu-ssh
+        return_to_menu
         ;;
     "restart")
         systemctl restart ssh && print_success "SSH service restarted" || print_error "Failed to restart SSH"
-        echo -e ""
-        read -n 1 -s -r -p "Press any key to return to menu"
-        clear
-        menu-ssh
+        return_to_menu
         ;;
     *)
         print_error "Usage: $0 {create|trial|renew|delete|list|check|expired|autokill|multi|install|restart}"
