@@ -311,43 +311,83 @@ check_multi() {
 case "$1" in
     "create")
         create_account
+        echo -e ""
+        read -n 1 -s -r -p "Press any key to return to menu"
+        clear
+        menu-ssh
         ;;
     "trial")
         trial_account
+        echo -e ""
+        read -n 1 -s -r -p "Press any key to return to menu"
+        clear
+        menu-ssh
         ;;
     "renew")
         renew_account
+        echo -e ""
+        read -n 1 -s -r -p "Press any key to return to menu"
+        clear
+        menu-ssh
         ;;
     "delete")
         delete_account
+        echo -e ""
+        read -n 1 -s -r -p "Press any key to return to menu"
+        clear
+        menu-ssh
         ;;
     "list")
         list_members
+        echo -e ""
+        read -n 1 -s -r -p "Press any key to return to menu"
+        clear
+        menu-ssh
         ;;
     "check")
         check_login
+        echo -e ""
+        read -n 1 -s -r -p "Press any key to return to menu"
+        clear
+        menu-ssh
         ;;
     "expired")
         delete_expired
+        echo -e ""
+        read -n 1 -s -r -p "Press any key to return to menu"
+        clear
+        menu-ssh
         ;;
     "autokill")
         setup_autokill
+        echo -e ""
+        read -n 1 -s -r -p "Press any key to return to menu"
+        clear
+        menu-ssh
         ;;
     "multi")
         check_multi
+        echo -e ""
+        read -n 1 -s -r -p "Press any key to return to menu"
+        clear
+        menu-ssh
         ;;
     "install")
         install_ssh
+        echo -e ""
+        read -n 1 -s -r -p "Press any key to return to menu"
+        clear
+        menu-ssh
         ;;
     "restart")
         systemctl restart ssh && print_success "SSH service restarted" || print_error "Failed to restart SSH"
+        echo -e ""
+        read -n 1 -s -r -p "Press any key to return to menu"
+        clear
+        menu-ssh
         ;;
     *)
         print_error "Usage: $0 {create|trial|renew|delete|list|check|expired|autokill|multi|install|restart}"
         exit 1
         ;;
-esac
-
-read -n 1 -s -r -p "Press any key to return to menu"
-
-exit 0 
+esac 
