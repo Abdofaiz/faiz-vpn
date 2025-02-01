@@ -36,22 +36,35 @@ mkdir -p /etc/bot/{backups,.config}
 
 # Download function
 download_script() {
-    local file=$1
-    local dest=$2
+    local file="$1"
+    local dest="$2"
     echo -e "Downloading $file..."
     mkdir -p "$(dirname "$dest")"
     
-    wget -q "$REPO_RAW/$file" -O "$dest" || {
+    wget -q "$REPO_RAW/$file" -O "$dest"
+    if [ $? -ne 0 ]; then
         echo -e "${RED}Failed to download $file${NC}"
         return 1
-    }
-    chmod +x "$dest"
+    fi
     
+    chmod +x "$dest"
     if [ ! -x "$dest" ]; then
         echo -e "${RED}Failed to set permissions for $dest${NC}"
         return 1
-    }
+    fi
+    
     echo -e "${GREEN}Downloaded $file${NC}"
+}
+
+# Create symlink function
+create_symlink() {
+    local src="$1"
+    local dest="$2"
+    ln -sf "$src" "$dest"
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}Failed to create symlink: $dest${NC}"
+        return 1
+    fi
 }
 
 # Download main scripts
@@ -59,12 +72,12 @@ download_script "menu.sh" "$SCRIPT_DIR/menu.sh"
 
 # Download menu scripts
 for script in menu-ssh.sh menu-xray.sh menu-bot.sh menu-security.sh menu-settings.sh menu-backup.sh; do
-    download_script "menu/$script" "$SCRIPT_DIR/menu/$script"
+    download_script "menu/$script" "$MENU_DIR/$script"
 done
 
 # Download protocol scripts
 for script in ssh.sh websocket.sh xray.sh; do
-    download_script "protocols/$script" "$SCRIPT_DIR/protocols/$script"
+    download_script "protocols/$script" "$PROTO_DIR/$script"
 done
 
 # Download bot scripts
@@ -80,22 +93,13 @@ download_script "squid.conf" "/etc/squid/squid.conf"
 echo -e "Creating symlinks..."
 mkdir -p /usr/local/bin
 
-create_symlink() {
-    local src=$1
-    local dest=$2
-    ln -sf "$src" "$dest" || {
-        echo -e "${RED}Failed to create symlink: $dest${NC}"
-        return 1
-    }
-}
-
-create_symlink "$SCRIPT_DIR/menu.sh" /usr/local/bin/menu
-ln -sf "$SCRIPT_DIR/menu/menu-ssh.sh" /usr/local/bin/menu-ssh
-ln -sf "$SCRIPT_DIR/menu/menu-xray.sh" /usr/local/bin/menu-xray
-ln -sf "$SCRIPT_DIR/menu/menu-bot.sh" /usr/local/bin/menu-bot
-ln -sf "$SCRIPT_DIR/menu/menu-security.sh" /usr/local/bin/menu-security
-ln -sf "$SCRIPT_DIR/menu/menu-settings.sh" /usr/local/bin/menu-settings
-ln -sf "$SCRIPT_DIR/menu/menu-backup.sh" /usr/local/bin/menu-backup
+create_symlink "$SCRIPT_DIR/menu.sh" "/usr/local/bin/menu"
+create_symlink "$MENU_DIR/menu-ssh.sh" "/usr/local/bin/menu-ssh"
+create_symlink "$MENU_DIR/menu-xray.sh" "/usr/local/bin/menu-xray"
+create_symlink "$MENU_DIR/menu-bot.sh" "/usr/local/bin/menu-bot"
+create_symlink "$MENU_DIR/menu-security.sh" "/usr/local/bin/menu-security"
+create_symlink "$MENU_DIR/menu-settings.sh" "/usr/local/bin/menu-settings"
+create_symlink "$MENU_DIR/menu-backup.sh" "/usr/local/bin/menu-backup"
 
 # Install dependencies
 echo -e "Installing dependencies..."
