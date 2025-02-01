@@ -34,6 +34,14 @@ mkdir -p "$MENU_DIR" "$PROTO_DIR" "$BOT_DIR" "$SCRIPT_DIR/security"
 mkdir -p /etc/vpn/{payloads,ssl}
 mkdir -p /etc/bot/{backups,.config}
 
+# Set permissions function
+set_script_permissions() {
+    local dir=$1
+    echo -e "Setting permissions for $dir..."
+    find "$dir" -type f -name "*.sh" -exec chmod +x {} \;
+    find "$dir" -type f -name "menu*" -exec chmod +x {} \;
+}
+
 # Download function
 download_script() {
     local file="$1"
@@ -47,7 +55,7 @@ download_script() {
         return 1
     fi
     
-    chmod +x "$dest"
+    chmod 755 "$dest"
     if [ ! -x "$dest" ]; then
         echo -e "${RED}Failed to set permissions for $dest${NC}"
         return 1
@@ -65,6 +73,9 @@ create_symlink() {
         echo -e "${RED}Failed to create symlink: $dest${NC}"
         return 1
     fi
+    # Set permissions for both source and destination
+    chmod 755 "$src"
+    chmod 755 "$dest"
 }
 
 # Download main scripts
@@ -89,9 +100,15 @@ done
 # Download config files
 download_script "squid.conf" "/etc/squid/squid.conf"
 
+# After downloading all scripts
+echo -e "Setting permissions..."
+set_script_permissions "$SCRIPT_DIR"
+set_script_permissions "/usr/local/bin"
+
 # Create symlinks
 echo -e "Creating symlinks..."
 mkdir -p /usr/local/bin
+chmod 755 /usr/local/bin
 
 create_symlink "$SCRIPT_DIR/menu.sh" "/usr/local/bin/menu"
 create_symlink "$MENU_DIR/menu-ssh.sh" "/usr/local/bin/menu-ssh"
@@ -100,6 +117,15 @@ create_symlink "$MENU_DIR/menu-bot.sh" "/usr/local/bin/menu-bot"
 create_symlink "$MENU_DIR/menu-security.sh" "/usr/local/bin/menu-security"
 create_symlink "$MENU_DIR/menu-settings.sh" "/usr/local/bin/menu-settings"
 create_symlink "$MENU_DIR/menu-backup.sh" "/usr/local/bin/menu-backup"
+
+# Verify permissions
+echo -e "Verifying permissions..."
+for cmd in menu menu-ssh menu-xray menu-bot menu-security menu-settings menu-backup; do
+    if [ ! -x "/usr/local/bin/$cmd" ]; then
+        echo -e "${RED}Warning: $cmd is not executable${NC}"
+        chmod 755 "/usr/local/bin/$cmd"
+    fi
+done
 
 # Install dependencies
 echo -e "Installing dependencies..."
