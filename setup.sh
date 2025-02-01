@@ -1,5 +1,17 @@
 #!/bin/bash
 
+# ==========================================
+# Color definitions (move these to the top, right after the shebang)
+RED='\033[0;31m'
+NC='\033[0m'
+GREEN='\033[0;32m'
+ORANGE='\033[0;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+LIGHT='\033[0;37m'
+# ==========================================
+
 # Check if root
 if [ "${EUID}" -ne 0 ]; then
 		echo "You need to run this script as root"
@@ -74,17 +86,26 @@ main_install() {
 		# Check if already installed and prompt for reinstall
 		if [ -f "/etc/xray/domain" ]; then
 				echo -e "${ORANGE}Script is already installed${NC}"
-				echo -n "Do you want to reinstall? (y/n): "
-				read answer
-				if [ "$answer" != "${answer#[Yy]}" ]; then
-						echo "Proceeding with reinstall..."
-						# Cleanup existing installation
-						rm -rf /etc/xray
-						rm -rf /var/lib/Abdofaizvpn
-				else
-						echo "Installation cancelled"
-						exit 0
-				fi
+				while true; do
+						echo -n "Do you want to reinstall? [y/n]: "
+						read -r answer
+						case $answer in
+								[Yy]* )
+										echo -e "${GREEN}Proceeding with reinstall...${NC}"
+										# Cleanup existing installation
+										rm -rf /etc/xray
+										rm -rf /var/lib/Abdofaizvpn
+										break
+										;;
+								[Nn]* )
+										echo -e "${RED}Installation cancelled${NC}"
+										exit 0
+										;;
+								* )
+										echo "Please answer y or n"
+										;;
+						esac
+				done
 		fi
 
 		mkdir -p /var/lib/Abdofaizvpn
@@ -165,16 +186,6 @@ update_system
 main_install
 cleanup
 
-# ==========================================
-# Color
-RED='\033[0;31m'
-NC='\033[0m'
-GREEN='\033[0;32m'
-ORANGE='\033[0;33m'
-BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
-CYAN='\033[0;36m'
-LIGHT='\033[0;37m'
 # ==========================================
 # Link Hosting You For Ssh Vpn
 sshlink="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/ssh"
