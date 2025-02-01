@@ -122,12 +122,111 @@ EOF
         "menu/menu-ssh.sh")
             cat > "$dest" << 'EOF'
 #!/bin/bash
-echo "SSH Menu - Coming Soon"
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+# Banner
+clear
+echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
+echo -e "${CYAN}│${NC}              ${CYAN}SSH VPN MANAGER${NC}                     ${CYAN}│${NC}"
+echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
+echo -e ""
+
+# Menu Options
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e " ${GREEN}1)${NC} Direct SSH (Default Port)"
+echo -e " ${GREEN}2)${NC} HTTP Payload (Port 80)"
+echo -e " ${GREEN}3)${NC} SSL/TLS Payload (Port 443)"
+echo -e " ${GREEN}4)${NC} Websocket HTTP (Port 80)"
+echo -e " ${GREEN}5)${NC} Websocket SSL/TLS (Port 443)"
+echo -e " ${RED}0)${NC} Back to Main Menu"
+echo -e ""
+read -p "Select an option [0-5]: " opt
+
+case $opt in
+    1) /usr/local/vpn-script/protocols/ssh.sh ;;
+    2) /usr/local/vpn-script/protocols/websocket.sh ;;
+    3) /usr/local/vpn-script/protocols/xray.sh ;;
+    0) menu ;;
+    *) menu-ssh ;;
+esac
+EOF
+            ;;
+        "menu/menu-xray.sh")
+            cat > "$dest" << 'EOF'
+#!/bin/bash
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+# Banner
+clear
+echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
+echo -e "${CYAN}│${NC}              ${CYAN}XRAY MANAGER${NC}                        ${CYAN}│${NC}"
+echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
+echo -e ""
+echo -e "Coming Soon..."
+echo -e ""
 read -n 1 -s -r -p "Press any key to return to menu"
 menu
 EOF
             ;;
-        # Add more cases for other required files
+        "menu/menu-bot.sh")
+            cat > "$dest" << 'EOF'
+#!/bin/bash
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+# Script paths
+BOT_DIR="/usr/local/vpn-script/bot"
+
+# Banner
+clear
+echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
+echo -e "${CYAN}│${NC}               ${CYAN}BOT MENU${NC}                           ${CYAN}│${NC}"
+echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
+echo -e ""
+
+# Menu Options
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e " ${GREEN}1)${NC} Register IP"
+echo -e " ${GREEN}2)${NC} IP Lookup"
+echo -e " ${RED}0)${NC} Back to Main Menu"
+echo -e ""
+read -p "Select an option [0-2]: " opt
+
+case $opt in
+    1) $BOT_DIR/register-ip.sh ;;
+    2) $BOT_DIR/ip-lookup.sh ;;
+    0) menu ;;
+    *) menu-bot ;;
+esac
+EOF
+            ;;
+        "protocols/ssh.sh"|"protocols/websocket.sh"|"protocols/xray.sh")
+            cat > "$dest" << 'EOF'
+#!/bin/bash
+echo "Protocol script - Coming Soon"
+read -n 1 -s -r -p "Press any key to return to menu"
+menu-ssh
+EOF
+            ;;
+        "bot/register-ip.sh"|"bot/ip-lookup.sh")
+            cat > "$dest" << 'EOF'
+#!/bin/bash
+echo "Bot function - Coming Soon"
+read -n 1 -s -r -p "Press any key to return to menu"
+menu-bot
+EOF
+            ;;
     esac
     
     chmod 755 "$dest"
@@ -182,13 +281,10 @@ create_symlink "$SCRIPT_DIR/menu.sh" "/usr/local/bin/menu"
 create_symlink "$MENU_DIR/menu-ssh.sh" "/usr/local/bin/menu-ssh"
 create_symlink "$MENU_DIR/menu-xray.sh" "/usr/local/bin/menu-xray"
 create_symlink "$MENU_DIR/menu-bot.sh" "/usr/local/bin/menu-bot"
-create_symlink "$MENU_DIR/menu-security.sh" "/usr/local/bin/menu-security"
-create_symlink "$MENU_DIR/menu-settings.sh" "/usr/local/bin/menu-settings"
-create_symlink "$MENU_DIR/menu-backup.sh" "/usr/local/bin/menu-backup"
 
 # Verify permissions
 echo -e "Verifying permissions..."
-for cmd in menu menu-ssh menu-xray menu-bot menu-security menu-settings menu-backup; do
+for cmd in menu menu-ssh menu-xray menu-bot; do
     if [ ! -x "/usr/local/bin/$cmd" ]; then
         echo -e "${RED}Warning: $cmd is not executable${NC}"
         chmod 755 "/usr/local/bin/$cmd"
