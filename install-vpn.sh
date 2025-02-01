@@ -20,46 +20,178 @@ mkdir -p "$SCRIPT_DIR"/{menu,protocols,bot} /etc/ssh /etc/xray /var/lib/crot /et
 # Create database files
 touch /etc/ssh/.ssh.db /etc/xray/config.json /var/lib/crot/data-user-l2tp
 
-# Install main menu
-echo -e "${CYAN}Installing main menu...${NC}"
-cat > "$SCRIPT_DIR/menu.sh" << 'EOL'
+# Create menu scripts
+echo -e "${CYAN}Creating menu scripts...${NC}"
+
+# Create SSH menu
+cat > "$MENU_DIR/menu-ssh.sh" << 'EOL'
 #!/bin/bash
 
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+# Script paths
+PROTO_DIR="/usr/local/vpn-script/protocols"
+
+clear
+echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
+echo -e "${CYAN}│${NC}              ${CYAN}SSH VPN MANAGER${NC}                     ${CYAN}│${NC}"
+echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
+echo -e ""
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e " ${GREEN}1)${NC} Create SSH Account"
+echo -e " ${GREEN}2)${NC} Trial SSH Account"
+echo -e " ${GREEN}3)${NC} Renew SSH Account"
+echo -e " ${GREEN}4)${NC} Delete SSH Account"
+echo -e " ${GREEN}5)${NC} Check User Login"
+echo -e " ${GREEN}6)${NC} List Member SSH"
+echo -e " ${GREEN}7)${NC} Delete User Expired"
+echo -e " ${GREEN}8)${NC} Set up Autokill SSH"
+echo -e " ${GREEN}9)${NC} Check User Multi Login"
+echo -e " ${GREEN}10)${NC} Restart All Service"
+echo -e " ${RED}0)${NC} Back to Main Menu"
+echo -e ""
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -ne "Select an option [0-10]: "
+read opt
+
+case $opt in
+    1) exec bash "$PROTO_DIR/ssh.sh" create ;;
+    2) exec bash "$PROTO_DIR/ssh.sh" trial ;;
+    3) exec bash "$PROTO_DIR/ssh.sh" renew ;;
+    4) exec bash "$PROTO_DIR/ssh.sh" delete ;;
+    5) exec bash "$PROTO_DIR/ssh.sh" check ;;
+    6) exec bash "$PROTO_DIR/ssh.sh" list ;;
+    7) exec bash "$PROTO_DIR/ssh.sh" expired ;;
+    8) exec bash "$PROTO_DIR/ssh.sh" autokill ;;
+    9) exec bash "$PROTO_DIR/ssh.sh" multi ;;
+    10) exec bash "$PROTO_DIR/ssh.sh" restart ;;
+    0) exec menu ;;
+    *) exec menu-ssh ;;
+esac
+EOL
+
+# Create XRAY menu
+cat > "$MENU_DIR/menu-xray.sh" << 'EOL'
+#!/bin/bash
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+# Script paths
+PROTO_DIR="/usr/local/vpn-script/protocols"
+
+clear
+echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
+echo -e "${CYAN}│${NC}              ${CYAN}XRAY MANAGER${NC}                        ${CYAN}│${NC}"
+echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
+echo -e ""
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e " ${GREEN}1)${NC} Install XRAY"
+echo -e " ${GREEN}2)${NC} VLESS Menu"
+echo -e " ${GREEN}3)${NC} VMESS Menu"
+echo -e " ${GREEN}4)${NC} Trojan Menu"
+echo -e " ${GREEN}5)${NC} List All Members"
+echo -e " ${GREEN}6)${NC} Check Running Services"
+echo -e " ${GREEN}7)${NC} Update Certificate"
+echo -e " ${RED}0)${NC} Back to Main Menu"
+echo -e ""
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -ne "Select an option [0-7]: "
+read opt
+
+case $opt in
+    1) exec bash "$PROTO_DIR/xray.sh" install ;;
+    2) exec bash "$PROTO_DIR/xray.sh" vless-menu ;;
+    3) exec bash "$PROTO_DIR/xray.sh" vmess-menu ;;
+    4) exec bash "$PROTO_DIR/xray.sh" trojan-menu ;;
+    5) exec bash "$PROTO_DIR/xray.sh" list-all ;;
+    6) exec bash "$PROTO_DIR/xray.sh" status ;;
+    7) exec bash "$PROTO_DIR/xray.sh" update-cert ;;
+    0) exec menu ;;
+    *) exec menu-xray ;;
+esac
+EOL
+
+# Create Bot menu
+cat > "$MENU_DIR/menu-bot.sh" << 'EOL'
+#!/bin/bash
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+# Script paths
+BOT_DIR="/usr/local/vpn-script/bot"
+
+clear
+echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
+echo -e "${CYAN}│${NC}              ${CYAN}BOT MANAGER${NC}                         ${CYAN}│${NC}"
+echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
+echo -e ""
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e " ${GREEN}1)${NC} Register IP"
+echo -e " ${GREEN}2)${NC} IP Lookup"
+echo -e " ${GREEN}3)${NC} Bot Settings"
+echo -e " ${RED}0)${NC} Back to Main Menu"
+echo -e ""
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -ne "Select an option [0-3]: "
+read opt
+
+case $opt in
+    1) exec bash "$BOT_DIR/register-ip.sh" ;;
+    2) exec bash "$BOT_DIR/ip-lookup.sh" ;;
+    3) exec bash "$BOT_DIR/settings.sh" ;;
+    0) exec menu ;;
+    *) exec menu-bot ;;
+esac
+EOL
+
+# Create Backup menu
+cat > "$MENU_DIR/menu-backup.sh" << 'EOL'
+#!/bin/bash
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
 clear
 echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
-echo -e "${CYAN}│${NC}               ${CYAN}MAIN MENU${NC}                          ${CYAN}│${NC}"
+echo -e "${CYAN}│${NC}             ${CYAN}BACKUP MANAGER${NC}                       ${CYAN}│${NC}"
 echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
 echo -e ""
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e " ${GREEN}1)${NC} SSH Menu"
-echo -e " ${GREEN}2)${NC} XRAY Menu"
-echo -e " ${GREEN}3)${NC} Bot Menu"
-echo -e " ${GREEN}4)${NC} Backup Menu"
-echo -e " ${RED}0)${NC} Exit"
+echo -e " ${GREEN}1)${NC} Backup VPN"
+echo -e " ${GREEN}2)${NC} Restore VPN"
+echo -e " ${GREEN}3)${NC} Auto Backup Settings"
+echo -e " ${RED}0)${NC} Back to Main Menu"
 echo -e ""
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -ne "Select an option [0-4]: "
+echo -ne "Select an option [0-3]: "
 read opt
 
 case $opt in
-    1) exec menu-ssh ;;
-    2) exec menu-xray ;;
-    3) exec menu-bot ;;
-    4) exec menu-backup ;;
-    0) exit ;;
-    *) exec menu ;;
+    1) exec bash "$SCRIPT_DIR/backup.sh" backup ;;
+    2) exec bash "$SCRIPT_DIR/backup.sh" restore ;;
+    3) exec bash "$SCRIPT_DIR/backup.sh" settings ;;
+    0) exec menu ;;
+    *) exec menu-backup ;;
 esac
 EOL
 
-# Make scripts executable
-chmod +x "$SCRIPT_DIR/menu.sh"
+# Make all menu scripts executable
+chmod +x "$MENU_DIR"/*.sh
 
 # Create symlinks
 echo -e "${CYAN}Creating symlinks...${NC}"
