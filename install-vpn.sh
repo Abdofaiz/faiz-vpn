@@ -190,8 +190,86 @@ case $opt in
 esac
 EOL
 
+# Create main menu
+cat > "$SCRIPT_DIR/menu.sh" << 'EOL'
+#!/bin/bash
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+clear
+echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
+echo -e "${CYAN}│${NC}               ${CYAN}MAIN MENU${NC}                          ${CYAN}│${NC}"
+echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
+echo -e ""
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e " ${GREEN}1)${NC} SSH Menu"
+echo -e " ${GREEN}2)${NC} XRAY Menu"
+echo -e " ${GREEN}3)${NC} Bot Menu"
+echo -e " ${GREEN}4)${NC} Backup Menu"
+echo -e " ${GREEN}5)${NC} Settings Menu"
+echo -e " ${RED}0)${NC} Exit"
+echo -e ""
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -ne "Select an option [0-5]: "
+read opt
+
+case $opt in
+    1) exec menu-ssh ;;
+    2) exec menu-xray ;;
+    3) exec menu-bot ;;
+    4) exec menu-backup ;;
+    5) exec menu-settings ;;
+    0) exit ;;
+    *) exec menu ;;
+esac
+EOL
+
+# Create settings menu
+cat > "$MENU_DIR/menu-settings.sh" << 'EOL'
+#!/bin/bash
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+clear
+echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
+echo -e "${CYAN}│${NC}             ${CYAN}SETTINGS MANAGER${NC}                     ${CYAN}│${NC}"
+echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
+echo -e ""
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e " ${GREEN}1)${NC} Change Port Settings"
+echo -e " ${GREEN}2)${NC} Change Domain"
+echo -e " ${GREEN}3)${NC} Change Banner"
+echo -e " ${GREEN}4)${NC} Restart All Services"
+echo -e " ${GREEN}5)${NC} Check System Status"
+echo -e " ${RED}0)${NC} Back to Main Menu"
+echo -e ""
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -ne "Select an option [0-5]: "
+read opt
+
+case $opt in
+    1) exec bash "$SCRIPT_DIR/settings.sh" port ;;
+    2) exec bash "$SCRIPT_DIR/settings.sh" domain ;;
+    3) exec bash "$SCRIPT_DIR/settings.sh" banner ;;
+    4) exec bash "$SCRIPT_DIR/settings.sh" restart ;;
+    5) exec bash "$SCRIPT_DIR/settings.sh" status ;;
+    0) exec menu ;;
+    *) exec menu-settings ;;
+esac
+EOL
+
 # Make all menu scripts executable
 chmod +x "$MENU_DIR"/*.sh
+chmod +x "$SCRIPT_DIR/menu.sh"
 
 # Create symlinks
 echo -e "${CYAN}Creating symlinks...${NC}"
@@ -206,9 +284,10 @@ ln -sf "$MENU_DIR/menu-ssh.sh" "/usr/local/bin/menu-ssh"
 ln -sf "$MENU_DIR/menu-xray.sh" "/usr/local/bin/menu-xray"
 ln -sf "$MENU_DIR/menu-bot.sh" "/usr/local/bin/menu-bot"
 ln -sf "$MENU_DIR/menu-backup.sh" "/usr/local/bin/menu-backup"
+ln -sf "$MENU_DIR/menu-settings.sh" "/usr/local/bin/menu-settings"
 
 # Verify symlinks
-for cmd in menu menu-ssh menu-xray menu-bot menu-backup; do
+for cmd in menu menu-ssh menu-xray menu-bot menu-backup menu-settings; do
     if [ ! -L "/usr/local/bin/$cmd" ]; then
         echo -e "${RED}Failed to create symlink for $cmd${NC}"
     fi
