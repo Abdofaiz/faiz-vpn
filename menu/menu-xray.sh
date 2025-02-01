@@ -18,29 +18,21 @@ echo -e ""
 
 # Menu Options
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e " ${GREEN}1)${NC} Create XRAY Account"
-echo -e " ${GREEN}2)${NC} Trial XRAY Account"
-echo -e " ${GREEN}3)${NC} Extend XRAY Account"
-echo -e " ${GREEN}4)${NC} Delete XRAY Account"
-echo -e " ${GREEN}5)${NC} Check User Login"
-echo -e " ${GREEN}6)${NC} List Member XRAY"
-echo -e " ${GREEN}7)${NC} Renew Certificate XRAY"
-echo -e " ${GREEN}8)${NC} Check XRAY Config"
+echo -e " ${GREEN}1)${NC} Install XRAY"
+echo -e " ${GREEN}2)${NC} Create Account"
+echo -e " ${GREEN}3)${NC} Delete Account"
+echo -e " ${GREEN}4)${NC} List Members"
 echo -e " ${RED}0)${NC} Back to Main Menu"
 echo -e ""
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -ne "Select an option [0-8]: "
+echo -ne "Select an option [0-4]: "
 read opt
 
 case $opt in
-    1) clear ; $PROTO_DIR/xray.sh create ;;
-    2) clear ; $PROTO_DIR/xray.sh trial ;;
-    3) clear ; $PROTO_DIR/xray.sh extend ;;
-    4) clear ; $PROTO_DIR/xray.sh delete ;;
-    5) clear ; $PROTO_DIR/xray.sh check ;;
-    6) clear ; $PROTO_DIR/xray.sh list ;;
-    7) clear ; $PROTO_DIR/xray.sh cert ;;
-    8) clear ; $PROTO_DIR/xray.sh config ;;
-    0) clear ; menu ;;
-    *) clear ; menu-xray ;;
+    1) exec bash "$PROTO_DIR/xray.sh" install ;;
+    2) exec bash "$PROTO_DIR/xray.sh" create ;;
+    3) exec bash "$PROTO_DIR/xray.sh" delete ;;
+    4) exec bash "$PROTO_DIR/xray.sh" list ;;
+    0) exec menu ;;
+    *) exec menu-xray ;;
 esac 
