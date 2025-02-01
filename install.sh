@@ -13,6 +13,31 @@ SCRIPT_DIR="/usr/local/vpn-script"
 CONFIG_DIR="/etc/vpn"
 BOT_DIR="/etc/bot"
 
+# Add at the beginning after colors
+VERSION="1.0.0"
+REPO_URL="https://github.com/Abdofaiz/faiz-vpn"
+REPO_BRANCH="main"
+
+# Add at beginning of script
+MODE="install"
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --update)
+            MODE="update"
+            shift
+            ;;
+        --uninstall)
+            MODE="uninstall"
+            shift
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
+
 # Banner
 clear
 echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
@@ -23,10 +48,23 @@ echo -e ""
 # Create directories
 create_directories() {
     echo -e "Creating directories..."
+    
+    # Remove existing directories if they exist
+    rm -rf $SCRIPT_DIR
+    
+    # Create fresh directories
     mkdir -p $SCRIPT_DIR/{menu,protocols,bot,security}
     mkdir -p $CONFIG_DIR/{payloads,ssl}
     mkdir -p $BOT_DIR/{backups,.config}
     mkdir -p /etc/stunnel
+    
+    # Verify directories were created
+    for dir in "$SCRIPT_DIR" "$CONFIG_DIR" "$BOT_DIR"; do
+        if [ ! -d "$dir" ]; then
+            echo -e "${RED}Failed to create directory: $dir${NC}"
+            exit 1
+        fi
+    done
 }
 
 # Install dependencies
@@ -53,8 +91,17 @@ install_dependencies() {
 copy_scripts() {
     echo -e "Copying script files..."
     
+    # Check if source files exist
+    if [ ! -f "menu.sh" ]; then
+        echo -e "${RED}Error: menu.sh not found in current directory${NC}"
+        exit 1
+    }
+    
     # Main menu
-    cp menu.sh $SCRIPT_DIR/
+    cp menu.sh $SCRIPT_DIR/ || {
+        echo -e "${RED}Failed to copy menu.sh${NC}"
+        exit 1
+    }
     cp menu-ssh.sh $SCRIPT_DIR/menu/
     cp menu-xray.sh $SCRIPT_DIR/menu/
     cp menu-argo.sh $SCRIPT_DIR/menu/
@@ -103,6 +150,10 @@ set_permissions() {
 # Create symlinks
 create_symlinks() {
     echo -e "Creating symlinks..."
+    # Create bin directory if it doesn't exist
+    mkdir -p /usr/local/bin
+    
+    # Create symlinks with absolute paths
     ln -sf $SCRIPT_DIR/menu.sh /usr/local/bin/menu
     ln -sf $SCRIPT_DIR/menu/menu-ssh.sh /usr/local/bin/menu-ssh
     ln -sf $SCRIPT_DIR/menu/menu-xray.sh /usr/local/bin/menu-xray
@@ -111,6 +162,9 @@ create_symlinks() {
     ln -sf $SCRIPT_DIR/menu/menu-settings.sh /usr/local/bin/menu-settings
     ln -sf $SCRIPT_DIR/menu/menu-backup.sh /usr/local/bin/menu-backup
     ln -sf $SCRIPT_DIR/menu/menu-bot.sh /usr/local/bin/menu-bot
+    
+    # Make sure all scripts are executable
+    chmod +x /usr/local/bin/menu*
 }
 
 # Configure services
@@ -134,6 +188,92 @@ configure_services() {
     fi
 }
 
+# Add new function for updates
+check_update() {
+    echo -e "Checking for updates..."
+    
+    # Get latest version from repo
+    latest_ver=$(curl -s $REPO_URL/raw/$REPO_BRANCH/version)
+    
+    if [[ "$VERSION" < "$latest_ver" ]]; then
+        echo -e "${YELLOW}New version $latest_ver is available${NC}"
+        echo -e "Current version: $VERSION"
+        read -p "Would you like to update? [y/n]: " do_update
+        
+        if [[ $do_update =~ ^[Yy]$ ]]; then
+            # Download latest version
+            wget -q $REPO_URL/archive/refs/heads/$REPO_BRANCH.zip
+            unzip -q $REPO_BRANCH.zip
+            cd faiz-vpn-$REPO_BRANCH
+            
+            # Re-run installation
+            bash install.sh --update
+            exit 0
+        fi
+    else
+        echo -e "${GREEN}You have the latest version${NC}"
+    fi
+}
+
+# Add backup function
+backup_configs() {
+    echo -e "Backing up existing configurations..."
+    BACKUP_DIR="/root/vpn-backup-$(date +%Y%m%d_%H%M%S)"
+    mkdir -p $BACKUP_DIR
+    
+    # Backup existing configs
+    if [ -d "$SCRIPT_DIR" ]; then
+        cp -r $SCRIPT_DIR $BACKUP_DIR/
+    fi
+    if [ -d "$CONFIG_DIR" ]; then
+        cp -r $CONFIG_DIR $BACKUP_DIR/
+    fi
+    if [ -d "$BOT_DIR" ]; then
+        cp -r $BOT_DIR $BACKUP_DIR/
+    fi
+    
+    # Backup service configs
+    if [ -f "/etc/squid/squid.conf" ]; then
+        cp /etc/squid/squid.conf $BACKUP_DIR/
+    fi
+    if [ -f "/etc/stunnel/stunnel.conf" ]; then
+        cp /etc/stunnel/stunnel.conf $BACKUP_DIR/
+    fi
+    
+    echo -e "${GREEN}Configurations backed up to: $BACKUP_DIR${NC}"
+}
+
+# Add uninstall function
+uninstall() {
+    echo -e "${RED}Warning: This will remove all VPN script configurations${NC}"
+    read -p "Are you sure you want to uninstall? [y/N]: " confirm
+    
+    if [[ $confirm =~ ^[Yy]$ ]]; then
+        echo -e "Uninstalling..."
+        
+        # Stop services
+        systemctl stop ws-proxy python-proxy squid stunnel4
+        systemctl disable ws-proxy python-proxy squid stunnel4
+        
+        # Remove directories
+        rm -rf $SCRIPT_DIR $CONFIG_DIR $BOT_DIR
+        
+        # Remove symlinks
+        rm -f /usr/local/bin/{menu,menu-ssh,menu-xray,menu-argo,menu-security,menu-settings,menu-backup,menu-bot}
+        
+        # Restore original configs
+        if [ -f "/etc/squid/squid.conf.bak" ]; then
+            mv /etc/squid/squid.conf.bak /etc/squid/squid.conf
+        fi
+        if [ -f "/etc/stunnel/stunnel.conf.bak" ]; then
+            mv /etc/stunnel/stunnel.conf.bak /etc/stunnel/stunnel.conf
+        fi
+        
+        echo -e "${GREEN}Uninstallation completed${NC}"
+        exit 0
+    fi
+}
+
 # Main installation
 echo -e "Starting installation..."
 
@@ -143,13 +283,26 @@ if [ "$(id -u)" != "0" ]; then
    exit 1
 fi
 
-# Execute installation steps
-create_directories
-install_dependencies
-copy_scripts
-set_permissions
-create_symlinks
-configure_services
+# Modify main execution
+case $MODE in
+    install)
+        backup_configs
+        create_directories
+        install_dependencies
+        copy_scripts
+        set_permissions
+        create_symlinks
+        configure_services
+        ;;
+    update)
+        backup_configs
+        copy_scripts
+        set_permissions
+        ;;
+    uninstall)
+        uninstall
+        ;;
+esac
 
 # Final setup
 echo -e "\n${GREEN}Installation completed!${NC}"

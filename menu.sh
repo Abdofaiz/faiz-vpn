@@ -72,21 +72,23 @@ echo -e ""
 
 # Main Menu
 echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
-echo -e "${CYAN}│${NC}                  ${CYAN}MAIN MENU${NC}                        ${CYAN}│${NC}"
+echo -e "${CYAN}│${NC}                ${CYAN}MAIN MENU${NC}                         ${CYAN}│${NC}"
 echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
 echo -e ""
+
+# Menu Options
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e " ${GREEN}1)${NC} MENU SSH & OVPN"
 echo -e " ${GREEN}2)${NC} MENU XRAY"
 echo -e " ${GREEN}3)${NC} MENU ARGO"
 echo -e " ${GREEN}4)${NC} MENU SECURITY"
 echo -e " ${GREEN}5)${NC} MENU SETTINGS"
 echo -e " ${GREEN}6)${NC} BACKUP & RESTORE"
-echo -e " ${GREEN}7)${NC} STATUS SERVICES"
-echo -e " ${GREEN}8)${NC} UPDATE SCRIPT"
+echo -e " ${GREEN}7)${NC} BOT FEATURES"
 echo -e " ${RED}0)${NC} Exit"
 echo -e ""
-echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
-echo -ne "Please select an option [0-8]: "
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -ne "Select an option [0-7]: "
 read opt
 
 case $opt in
@@ -96,8 +98,7 @@ case $opt in
     4) clear ; menu-security ;;
     5) clear ; menu-settings ;;
     6) clear ; menu-backup ;;
-    7) clear ; running ;;
-    8) clear ; update ;;
+    7) clear ; menu-bot ;;
     0) clear ; exit ;;
     *) clear ; menu ;;
 esac
