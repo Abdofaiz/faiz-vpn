@@ -11,6 +11,9 @@ NC='\033[0m'
 # Configuration
 REPO_RAW="https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main"
 SCRIPT_DIR="/usr/local/vpn-script"
+BOT_DIR="$SCRIPT_DIR/bot"
+MENU_DIR="$SCRIPT_DIR/menu"
+PROTO_DIR="$SCRIPT_DIR/protocols"
 
 # Banner
 clear
@@ -27,7 +30,7 @@ fi
 
 # Create directories
 echo -e "Creating directories..."
-mkdir -p "$SCRIPT_DIR"/{menu,protocols,bot,security}
+mkdir -p "$MENU_DIR" "$PROTO_DIR" "$BOT_DIR" "$SCRIPT_DIR/security"
 mkdir -p /etc/vpn/{payloads,ssl}
 mkdir -p /etc/bot/{backups,.config}
 
@@ -36,11 +39,18 @@ download_script() {
     local file=$1
     local dest=$2
     echo -e "Downloading $file..."
+    mkdir -p "$(dirname "$dest")"
+    
     wget -q "$REPO_RAW/$file" -O "$dest" || {
         echo -e "${RED}Failed to download $file${NC}"
         return 1
     }
     chmod +x "$dest"
+    
+    if [ ! -x "$dest" ]; then
+        echo -e "${RED}Failed to set permissions for $dest${NC}"
+        return 1
+    }
     echo -e "${GREEN}Downloaded $file${NC}"
 }
 
@@ -58,8 +68,9 @@ for script in ssh.sh websocket.sh xray.sh; do
 done
 
 # Download bot scripts
-for script in register-ip.sh ip-lookup.sh; do
-    download_script "bot/$script" "$SCRIPT_DIR/bot/$script"
+for script in register-ip.sh ip-lookup.sh bot-settings.sh cdn-check.sh banner-check.sh \
+              response-check.sh cert-check.sh monitor-bot.sh backup-bot.sh schedule-backup.sh; do
+    download_script "bot/$script" "$BOT_DIR/$script"
 done
 
 # Download config files
@@ -67,7 +78,18 @@ download_script "squid.conf" "/etc/squid/squid.conf"
 
 # Create symlinks
 echo -e "Creating symlinks..."
-ln -sf "$SCRIPT_DIR/menu.sh" /usr/local/bin/menu
+mkdir -p /usr/local/bin
+
+create_symlink() {
+    local src=$1
+    local dest=$2
+    ln -sf "$src" "$dest" || {
+        echo -e "${RED}Failed to create symlink: $dest${NC}"
+        return 1
+    }
+}
+
+create_symlink "$SCRIPT_DIR/menu.sh" /usr/local/bin/menu
 ln -sf "$SCRIPT_DIR/menu/menu-ssh.sh" /usr/local/bin/menu-ssh
 ln -sf "$SCRIPT_DIR/menu/menu-xray.sh" /usr/local/bin/menu-xray
 ln -sf "$SCRIPT_DIR/menu/menu-bot.sh" /usr/local/bin/menu-bot
