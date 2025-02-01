@@ -10,34 +10,59 @@ CYAN='\033[0;36m'
 LIGHT='\033[0;37m'
 NC='\033[0m'
 
-# OS Information
-source /etc/os-release
-source /root/.myipvps
+# Paths
+SCRIPT_DIR="/usr/local/vpn-script"
+SSH_DB="/etc/ssh/.ssh.db"
+XRAY_CONFIG="/etc/xray/config.json"
+L2TP_DB="/var/lib/crot/data-user-l2tp"
+VERSION_FILE="/home/ver"
+
+# Create required directories and files
+mkdir -p /etc/ssh /etc/xray /var/lib/crot
+touch $SSH_DB $XRAY_CONFIG $L2TP_DB
 
 # Get System Information
-domain=$(cat /etc/xray/domain)
-ISP=$(curl -s ipinfo.io/org | cut -d " " -f 2-10 )
-CITY=$(curl -s ipinfo.io/city )
-WKT=$(curl -s ipinfo.io/timezone )
-IPVPS=$(curl -s ipv4.icanhazip.com)
-tram=$(free -m | awk 'NR==2 {print $2}')
-swap=$(free -m | awk 'NR==4 {print $2}')
-freq=$(awk -F: ' /cpu MHz/ {freq=$2} END {print freq}' /proc/cpuinfo)
-cores=$(awk -F: '/model name/ {core++} END {print core}' /proc/cpuinfo)
-cname=$(awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo)
-kernel=$(uname -r)
-RAM=$(free -m | awk 'NR==2 {print $2}')
-USAGERAM=$(free -m | awk 'NR==2 {print $3}')
-MEMOFREE=$(printf '%.3f' "$(echo "scale=3; $RAM/1024" | bc)")
-MEMOUSED=$(printf '%.3f' "$(echo "scale=3; $USAGERAM/1024" | bc)")
-totalgb=$(df -h / | awk 'NR==2 {print $2}')
-usedgb=$(df -h / | awk 'NR==2 {print $3}')
-freegb=$(df -h / | awk 'NR==2 {print $4}')
+get_system_info() {
+    source /etc/os-release
+    ARCH=$(uname -m)
+    KERNEL=$(uname -r)
+    CPU_MODEL=$(grep -m 1 "model name" /proc/cpuinfo | cut -d ':' -f2 | sed 's/^ *//')
+    CPU_CORES=$(grep -c "processor" /proc/cpuinfo)
+    CPU_FREQ=$(grep -m 1 "cpu MHz" /proc/cpuinfo | cut -d ':' -f2 | sed 's/^ *//')
+    
+    # Memory info in GB with 3 decimal places
+    TOTAL_RAM=$(free -m | awk 'NR==2 {printf "%.3f", $2/1024}')
+    USED_RAM=$(free -m | awk 'NR==2 {printf "%.3f", $3/1024}')
+    SWAP_TOTAL=$(free -m | awk 'NR==4 {print $2}')
+    
+    # Disk info
+    DISK_INFO=$(df -h / | awk 'NR==2 {print $2" (Used: "$3" Free: "$4")"}')
+    
+    # Network info
+    DOMAIN=$(cat /etc/xray/domain 2>/dev/null || echo "Not configured")
+    IP=$(curl -s ipv4.icanhazip.com)
+    ISP=$(curl -s ipinfo.io/org | tr -d '"')
+    REGION=$(curl -s ipinfo.io/city),$(curl -s ipinfo.io/country)
+    TIMEZONE=$(curl -s ipinfo.io/timezone)
+    
+    # Version
+    VERSION=$(cat $VERSION_FILE 2>/dev/null || echo "1.0.0")
+    echo "$VERSION" > $VERSION_FILE
+}
 
-# Clear screen
-clear
+# Get active users count
+get_active_users() {
+    SSH_USERS=$(grep -c "^###" $SSH_DB 2>/dev/null || echo "0")
+    XRAY_USERS=$(grep -c "^###" $XRAY_CONFIG 2>/dev/null || echo "0")
+    L2TP_USERS=$(grep -c "^###" $L2TP_DB 2>/dev/null || echo "0")
+}
+
+# Update system info
+get_system_info
+get_active_users
 
 # Banner
+clear
 echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
 echo -e "${CYAN}│${NC}               ${CYAN}SCRIPT BY USER_LEGEND${NC}               ${CYAN}│${NC}"
 echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
@@ -46,27 +71,27 @@ echo -e "${CYAN}│${NC}                  ${CYAN}SYS INFO${NC}                  
 echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
 echo -e ""
 echo -e "${GREEN}OS SYSTEM${NC}    : $ID $VERSION_ID"
-echo -e "${GREEN}ARCH${NC}         : $(uname -m)"
-echo -e "${GREEN}KERNEL TYPE${NC}  : $kernel"
-echo -e "${GREEN}CPU MODEL${NC}    : $cname"
-echo -e "${GREEN}NUMBER CORES${NC} : $cores"
-echo -e "${GREEN}CPU FREQ${NC}     : $freq MHz"
-echo -e "${GREEN}TOTAL RAM${NC}    : ${MEMOFREE} GB / ${MEMOUSED} GB Used"
-echo -e "${GREEN}TOTAL SWAP${NC}   : $swap MB"
-echo -e "${GREEN}TOTAL DISK${NC}   : $totalgb (Used: $usedgb Free: $freegb)"
-echo -e "${GREEN}DOMAIN${NC}       : $domain"
-echo -e "${GREEN}SLOWDNS${NC}      : dns.$domain"
-echo -e "${GREEN}IP ADDRESS${NC}   : $IPVPS"
+echo -e "${GREEN}ARCH${NC}         : $ARCH"
+echo -e "${GREEN}KERNEL TYPE${NC}  : $KERNEL"
+echo -e "${GREEN}CPU MODEL${NC}    : $CPU_MODEL"
+echo -e "${GREEN}NUMBER CORES${NC} : $CPU_CORES"
+echo -e "${GREEN}CPU FREQ${NC}     : $CPU_FREQ MHz"
+echo -e "${GREEN}TOTAL RAM${NC}    : $TOTAL_RAM GB / $USED_RAM GB Used"
+echo -e "${GREEN}TOTAL SWAP${NC}   : $SWAP_TOTAL MB"
+echo -e "${GREEN}TOTAL DISK${NC}   : $DISK_INFO"
+echo -e "${GREEN}DOMAIN${NC}       : $DOMAIN"
+echo -e "${GREEN}SLOWDNS${NC}      : dns.$DOMAIN"
+echo -e "${GREEN}IP ADDRESS${NC}   : $IP"
 echo -e "${GREEN}ISP${NC}          : $ISP"
-echo -e "${GREEN}REGION${NC}       : $CITY [$WKT]"
-echo -e "${GREEN}SCRIPT VER${NC}   : $(cat /home/ver)"
+echo -e "${GREEN}REGION${NC}       : $REGION [$TIMEZONE]"
+echo -e "${GREEN}SCRIPT VER${NC}   : $VERSION"
 echo -e ""
 
 # Account Info
 echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
-echo -e "     ${CYAN}SSH & OVPN${NC} : $(grep -c -E "^### " "/etc/ssh/.ssh.db") ${GREEN}ACTIVE${NC}"
-echo -e "     ${CYAN}XRAY${NC}       : $(grep -c -E "^### " "/etc/xray/config.json") ${GREEN}ACTIVE${NC}"
-echo -e "     ${CYAN}L2TP${NC}       : $(grep -c -E "^### " "/var/lib/crot/data-user-l2tp") ${GREEN}ACTIVE${NC}"
+echo -e "     ${CYAN}SSH & OVPN${NC} : $SSH_USERS ${GREEN}ACTIVE${NC}"
+echo -e "     ${CYAN}XRAY${NC}       : $XRAY_USERS ${GREEN}ACTIVE${NC}"
+echo -e "     ${CYAN}L2TP${NC}       : $L2TP_USERS ${GREEN}ACTIVE${NC}"
 echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
 echo -e ""
 
