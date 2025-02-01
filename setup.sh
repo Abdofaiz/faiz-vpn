@@ -7,6 +7,9 @@ YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
+# Repository URL
+REPO="https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main"
+
 # Check root
 if [ "$(id -u)" != "0" ]; then
    echo -e "${RED}This script must be run as root${NC}" 
@@ -50,6 +53,10 @@ echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf
 echo "net.ipv6.conf.default.disable_ipv6 = 1" >> /etc/sysctl.conf
 sysctl -p
 
+# Create required directories
+echo -e "${CYAN}[INFO]${NC} Creating directories..."
+mkdir -p /var/lib/scrz-prem
+
 # Get public IP
 echo -e "${CYAN}[INFO]${NC} Getting public IP..."
 MYIP=$(wget -qO- ipinfo.io/ip)
@@ -57,7 +64,7 @@ echo "IP=$MYIP" > /var/lib/scrz-prem/ipvps.conf
 
 # Download installer
 echo -e "${CYAN}[INFO]${NC} Downloading VPN installer..."
-wget -O install-vpn.sh "https://raw.githubusercontent.com/yourusername/yourrepo/main/install-vpn.sh"
+wget -O install-vpn.sh "$REPO/install-vpn.sh"
 chmod +x install-vpn.sh
 
 # Run installer
