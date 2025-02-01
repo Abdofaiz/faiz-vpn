@@ -285,9 +285,10 @@ ln -sf "$MENU_DIR/menu-xray.sh" "/usr/local/bin/menu-xray"
 ln -sf "$MENU_DIR/menu-bot.sh" "/usr/local/bin/menu-bot"
 ln -sf "$MENU_DIR/menu-backup.sh" "/usr/local/bin/menu-backup"
 ln -sf "$MENU_DIR/menu-settings.sh" "/usr/local/bin/menu-settings"
+ln -sf "$PROTO_DIR/settings.sh" "/usr/local/bin/settings"
 
 # Verify symlinks
-for cmd in menu menu-ssh menu-xray menu-bot menu-backup menu-settings; do
+for cmd in menu menu-ssh menu-xray menu-bot menu-backup menu-settings settings; do
     if [ ! -L "/usr/local/bin/$cmd" ]; then
         echo -e "${RED}Failed to create symlink for $cmd${NC}"
     fi
