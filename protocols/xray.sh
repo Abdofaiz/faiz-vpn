@@ -8,9 +8,10 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 # Paths
-XRAY_DB="/etc/xray/config.json"
+XRAY_CONFIG="/etc/xray/config.json"
 XRAY_CERT="/etc/xray/xray.crt"
 XRAY_KEY="/etc/xray/xray.key"
+DOMAIN_FILE="/etc/xray/domain"
 
 # Print functions
 print_info() {
@@ -39,17 +40,20 @@ install_xray() {
     
     # Install dependencies
     apt-get update
-    apt-get install -y curl socat jq
+    apt-get install -y curl socat jq wget
 
     # Download and install Xray
     bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
     
-    # Create config directory if it doesn't exist
+    # Create config directory
     mkdir -p /etc/xray
     
-    # Generate default config if it doesn't exist
-    if [ ! -f "$XRAY_DB" ]; then
-        cat > "$XRAY_DB" << 'EOF'
+    # Get domain
+    read -p "Enter your domain: " domain
+    echo "$domain" > "$DOMAIN_FILE"
+    
+    # Generate default config
+    cat > "$XRAY_CONFIG" << EOF
 {
   "log": {
     "loglevel": "warning"
@@ -68,8 +72,40 @@ install_xray() {
         "tlsSettings": {
           "certificates": [
             {
-              "certificateFile": "/etc/xray/xray.crt",
-              "keyFile": "/etc/xray/xray.key"
+              "certificateFile": "$XRAY_CERT",
+              "keyFile": "$XRAY_KEY"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "port": 80,
+      "protocol": "vmess",
+      "settings": {
+        "clients": []
+      },
+      "streamSettings": {
+        "network": "ws",
+        "wsSettings": {
+          "path": "/vmess"
+        }
+      }
+    },
+    {
+      "port": 8443,
+      "protocol": "trojan",
+      "settings": {
+        "clients": []
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "tls",
+        "tlsSettings": {
+          "certificates": [
+            {
+              "certificateFile": "$XRAY_CERT",
+              "keyFile": "$XRAY_KEY"
             }
           ]
         }
@@ -83,13 +119,17 @@ install_xray() {
   ]
 }
 EOF
-    fi
-    
-    # Generate self-signed certificate if it doesn't exist
-    if [ ! -f "$XRAY_CERT" ] || [ ! -f "$XRAY_KEY" ]; then
-        print_info "Generating self-signed certificate..."
-        openssl req -x509 -newkey rsa:4096 -keyout "$XRAY_KEY" -out "$XRAY_CERT" -days 365 -nodes -subj "/CN=localhost"
-    fi
+
+    # Install SSL certificate
+    print_info "Installing SSL certificate..."
+    systemctl stop nginx
+    curl https://get.acme.sh | sh
+    ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt
+    ~/.acme.sh/acme.sh --register-account -m admin@"$domain"
+    ~/.acme.sh/acme.sh --issue -d "$domain" --standalone
+    ~/.acme.sh/acme.sh --installcert -d "$domain" \
+        --key-file "$XRAY_KEY" \
+        --fullchain-file "$XRAY_CERT"
     
     # Start XRAY service
     systemctl enable xray
@@ -97,10 +137,65 @@ EOF
     
     if systemctl is-active --quiet xray; then
         print_success "XRAY installed and configured successfully"
+        print_info "VLESS port: 443"
+        print_info "VMESS port: 80"
+        print_info "Trojan port: 8443"
     else
         print_error "Failed to start XRAY service"
         return 1
     fi
+}
+
+# Check XRAY status
+check_status() {
+    clear
+    echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
+    echo -e "${CYAN}│${NC}             ${CYAN}XRAY STATUS CHECK${NC}                    ${CYAN}│${NC}"
+    echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
+    echo -e ""
+    
+    if systemctl is-active --quiet xray; then
+        echo -e "XRAY Service: ${GREEN}Running${NC}"
+        echo -e "Domain: $(cat $DOMAIN_FILE)"
+        echo -e "VLESS Port: 443 (${GREEN}Active${NC})"
+        echo -e "VMESS Port: 80 (${GREEN}Active${NC})"
+        echo -e "Trojan Port: 8443 (${GREEN}Active${NC})"
+    else
+        echo -e "XRAY Service: ${RED}Not Running${NC}"
+    fi
+}
+
+# Update SSL certificate
+update_certificate() {
+    domain=$(cat "$DOMAIN_FILE")
+    print_info "Updating SSL certificate for $domain..."
+    
+    ~/.acme.sh/acme.sh --renew -d "$domain" --force
+    ~/.acme.sh/acme.sh --installcert -d "$domain" \
+        --key-file "$XRAY_KEY" \
+        --fullchain-file "$XRAY_CERT"
+    
+    systemctl restart xray
+    print_success "Certificate updated successfully"
+}
+
+# List all members
+list_all_members() {
+    clear
+    echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
+    echo -e "${CYAN}│${NC}             ${CYAN}ALL XRAY MEMBERS${NC}                     ${CYAN}│${NC}"
+    echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
+    echo -e ""
+    
+    echo -e "PROTOCOL  USERNAME          ID/PASSWORD"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    
+    for proto in vless vmess trojan; do
+        jq -r ".inbounds[] | select(.protocol == \"$proto\") | .settings.clients[] | \"$proto \(.email) \(.id // .password)\"" "$XRAY_CONFIG" | \
+        while read -r protocol email id; do
+            printf "%-8s %-15s %s\n" "${protocol^^}" "$email" "$id"
+        done
+    done
 }
 
 # Protocol-specific menus
@@ -202,20 +297,20 @@ create_account() {
         "vless")
             jq --arg id "$id" --arg email "$username" \
                 '.inbounds[] | select(.protocol == "vless") | .settings.clients += [{"id": $id, "email": $email}]' \
-                "$XRAY_DB" > "$tmp"
+                "$XRAY_CONFIG" > "$tmp"
             ;;
         "vmess")
             jq --arg id "$id" --arg email "$username" \
                 '.inbounds[] | select(.protocol == "vmess") | .settings.clients += [{"id": $id, "email": $email, "alterId": 0}]' \
-                "$XRAY_DB" > "$tmp"
+                "$XRAY_CONFIG" > "$tmp"
             ;;
         "trojan")
             jq --arg id "$id" --arg email "$username" \
                 '.inbounds[] | select(.protocol == "trojan") | .settings.clients += [{"password": $id, "email": $email}]' \
-                "$XRAY_DB" > "$tmp"
+                "$XRAY_CONFIG" > "$tmp"
             ;;
     esac
-    mv "$tmp" "$XRAY_DB"
+    mv "$tmp" "$XRAY_CONFIG"
     
     # Restart service
     systemctl restart xray
@@ -240,7 +335,7 @@ list_members() {
     echo -e "USERNAME          ID/Pass"
     echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     
-    jq -r ".inbounds[] | select(.protocol == \"$proto\") | .settings.clients[] | \"\(.email) \(.id)\"" "$XRAY_DB" | \
+    jq -r ".inbounds[] | select(.protocol == \"$proto\") | .settings.clients[] | \"\(.email) \(.id)\"" "$XRAY_CONFIG" | \
     while read -r email id; do
         printf "%-15s %s\n" "$email" "$id"
     done
@@ -252,8 +347,8 @@ delete_account() {
     read -p "Username to delete: " username
     
     tmp=$(mktemp)
-    jq --arg user "$username" ".inbounds[] | select(.protocol == \"$proto\") | .settings.clients = [.inbounds[].settings.clients[] | select(.email != $user)]" "$XRAY_DB" > "$tmp"
-    mv "$tmp" "$XRAY_DB"
+    jq --arg user "$username" ".inbounds[] | select(.protocol == \"$proto\") | .settings.clients = [.inbounds[].settings.clients[] | select(.email != $user)]" "$XRAY_CONFIG" > "$tmp"
+    mv "$tmp" "$XRAY_CONFIG"
     
     systemctl restart xray
     print_success "Account $username deleted"
