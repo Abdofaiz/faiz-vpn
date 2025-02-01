@@ -9,14 +9,13 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 # Configuration
-REPO_URL="https://github.com/Abdofaiz/faiz-vpn"
-BRANCH="main"
-TEMP_DIR="/tmp/vpn-install"
+REPO_RAW="https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main"
+SCRIPT_DIR="/usr/local/vpn-script"
 
 # Banner
 clear
 echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
-echo -e "${CYAN}│${NC}            ${CYAN}VPN SCRIPT DOWNLOADER${NC}                 ${CYAN}│${NC}"
+echo -e "${CYAN}│${NC}            ${CYAN}VPN SCRIPT INSTALLER${NC}                   ${CYAN}│${NC}"
 echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
 echo -e ""
 
@@ -26,34 +25,83 @@ if [ "$(id -u)" != "0" ]; then
    exit 1
 fi
 
-# Install required packages
-echo -e "Installing required packages..."
+# Create directories
+echo -e "Creating directories..."
+mkdir -p "$SCRIPT_DIR"/{menu,protocols,bot,security}
+mkdir -p /etc/vpn/{payloads,ssl}
+mkdir -p /etc/bot/{backups,.config}
+
+# Download function
+download_script() {
+    local file=$1
+    local dest=$2
+    echo -e "Downloading $file..."
+    wget -q "$REPO_RAW/$file" -O "$dest" || {
+        echo -e "${RED}Failed to download $file${NC}"
+        return 1
+    }
+    chmod +x "$dest"
+    echo -e "${GREEN}Downloaded $file${NC}"
+}
+
+# Download main scripts
+download_script "menu.sh" "$SCRIPT_DIR/menu.sh"
+
+# Download menu scripts
+for script in menu-ssh.sh menu-xray.sh menu-bot.sh menu-security.sh menu-settings.sh menu-backup.sh; do
+    download_script "menu/$script" "$SCRIPT_DIR/menu/$script"
+done
+
+# Download protocol scripts
+for script in ssh.sh websocket.sh xray.sh; do
+    download_script "protocols/$script" "$SCRIPT_DIR/protocols/$script"
+done
+
+# Download bot scripts
+for script in register-ip.sh ip-lookup.sh; do
+    download_script "bot/$script" "$SCRIPT_DIR/bot/$script"
+done
+
+# Download config files
+download_script "squid.conf" "/etc/squid/squid.conf"
+
+# Create symlinks
+echo -e "Creating symlinks..."
+ln -sf "$SCRIPT_DIR/menu.sh" /usr/local/bin/menu
+ln -sf "$SCRIPT_DIR/menu/menu-ssh.sh" /usr/local/bin/menu-ssh
+ln -sf "$SCRIPT_DIR/menu/menu-xray.sh" /usr/local/bin/menu-xray
+ln -sf "$SCRIPT_DIR/menu/menu-bot.sh" /usr/local/bin/menu-bot
+ln -sf "$SCRIPT_DIR/menu/menu-security.sh" /usr/local/bin/menu-security
+ln -sf "$SCRIPT_DIR/menu/menu-settings.sh" /usr/local/bin/menu-settings
+ln -sf "$SCRIPT_DIR/menu/menu-backup.sh" /usr/local/bin/menu-backup
+
+# Install dependencies
+echo -e "Installing dependencies..."
 apt-get update
-apt-get install -y git wget unzip
+apt-get install -y \
+    python3 \
+    python3-pip \
+    netcat \
+    openssl \
+    stunnel4 \
+    squid \
+    curl \
+    wget
 
-# Create temp directory
-rm -rf $TEMP_DIR
-mkdir -p $TEMP_DIR
-cd $TEMP_DIR
+# Configure services
+echo -e "Configuring services..."
+systemctl restart squid
 
-# Download repository
-echo -e "Downloading VPN scripts..."
-wget -q "${REPO_URL}/archive/refs/heads/${BRANCH}.zip" -O vpn.zip
-if [ $? -ne 0 ]; then
-    echo -e "${RED}Failed to download scripts${NC}"
-    exit 1
-fi
+# Final setup
+echo -e "\n${GREEN}Installation completed!${NC}"
+echo -e "\nYou can now:"
+echo -e "1. Run ${GREEN}menu${NC} to access the main menu"
+echo -e "2. Configure your bot settings in ${GREEN}menu-bot${NC}"
+echo -e "3. Set up your VPN configurations in ${GREEN}menu-ssh${NC}"
 
-# Extract files
-echo -e "Extracting files..."
-unzip -q vpn.zip
-cd faiz-vpn-${BRANCH}
-
-# Run installer
-echo -e "Starting installation..."
-chmod +x install.sh
-./install.sh
-
-# Cleanup
-cd /root
-rm -rf $TEMP_DIR 
+# Run menu
+echo -e ""
+read -p "Would you like to run the menu now? [y/n]: " run_menu
+if [[ $run_menu =~ ^[Yy]$ ]]; then
+    menu
+fi 
