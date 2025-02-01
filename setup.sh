@@ -167,29 +167,29 @@ CYAN='\033[0;36m'
 LIGHT='\033[0;37m'
 # ==========================================
 # Link Hosting You For Ssh Vpn
-sshlink="raw.githubusercontent.com/Abdofaiz/cfsshws/main/ssh"
+sshlink="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/ssh"
 # Link Hosting You For Sstp
-# gl33chervpnn="raw.githubusercontent.com/Abdofaiz/cfsshws/main/sstp"
+# gl33chervpnn="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/sstp"
 # Link Hosting You For Ssr
-# gl33chervpnnn="raw.githubusercontent.com/Abdofaiz/cfsshws/main/ssr"
+# gl33chervpnnn="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/ssr"
 # Link Hosting You For Shadowsocks
-# gl33chervpnnnn="raw.githubusercontent.com/Abdofaiz/cfsshws/main/shadowsocks"
+# gl33chervpnnnn="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/shadowsocks"
 # Link Hosting You For Wireguard
-# gl33chervpnnnnn="raw.githubusercontent.com/Abdofaiz/cfsshws/main/wireguard"
+# gl33chervpnnnnn="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/wireguard"
 # Link Hosting You For Xray
-xraylink="raw.githubusercontent.com/Abdofaiz/cfsshws/main/xray1"
+xraylink="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/xray1"
 # Link Hosting You For Ipsec
-# gl33chervpnnnnnnn="raw.githubusercontent.com/Abdofaiz/cfsshws/main/ipsec"
+# gl33chervpnnnnnnn="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/ipsec"
 # Link Hosting You For Backup
-backuplink="raw.githubusercontent.com/Abdofaiz/cfsshws/main/backup"
+backuplink="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/backup"
 # Link Hosting You For Websocket
-websocketlink="raw.githubusercontent.com/Abdofaiz/cfsshws/main/websocket"
+websocketlink="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/websocket"
 # Link Hosting You For Ohp
-ohplink="raw.githubusercontent.com/Abdofaiz/cfsshws/main/ohp"
+ohplink="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/ohp"
 # link Hosting update
-updatelink="raw.githubusercontent.com/Abdofaiz/cfsshws/main/update"
+updatelink="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/update"
 # link Hosting sslh-fix
-sslhlink="raw.githubusercontent.com/Abdofaiz/cfsshws/main/sslh-fix"
+sslhlink="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/sslh-fix"
 
 cat <<EOF> /etc/systemd/system/autosett.service
 [Unit]

@@ -15,7 +15,7 @@ LIGHT='\033[0;37m'
 MYIP=$(wget -qO- ipinfo.io/ip);
 clear
 # Link Hosting Kalian
-akbarvpn="raw.githubusercontent.com/Abdofaiz/cfsshws/main/websocket"
+akbarvpn="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/websocket"
 
 # Getting Proxy Template
 wget -q -O /usr/local/bin/ws-nontls https://${akbarvpn}/websocket.py

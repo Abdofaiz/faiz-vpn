@@ -15,7 +15,7 @@ MYIP=$(wget -qO- ipinfo.io/ip);
 
 clear
 # Link Hosting Kalian
-akbarvpn="raw.githubusercontent.com/Abdofaiz/cfsshws/main/backup"
+akbarvpn="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/backup"
 
 curl https://rclone.org/install.sh | bash
 printf "q\n" | rclone config

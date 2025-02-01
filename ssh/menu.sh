@@ -1,5 +1,43 @@
 #!/bin/bash
+# Color Definitions
+RED='\033[0;31m'
+NC='\033[0m'
+GREEN='\033[0;32m'
+ORANGE='\033[0;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+LIGHT='\033[0;37m'
+YELLOW='\033[1;33m'
+
+# Get System Information
+IPVPS=$(curl -s ipv4.icanhazip.com)
+DOMAIN=$(cat /etc/xray/domain)
+CPU_LOAD=$(uptime | awk -F'load average:' '{print $2}' | cut -d, -f1 | xargs)
+TOTAL_RAM=$(free -m | awk '/^Mem:/{print $2}')
+USED_RAM=$(free -m | awk '/^Mem:/{print $3}')
+RAM_PERCENT=$(free | awk '/Mem:/ {printf("%.2f"), $3/$2*100}')
+UPTIME=$(uptime -p | cut -d " " -f 2-)
+if [ -f "/root/log-install.txt" ]; then
+    INSTALL_DATE=$(date -r /root/log-install.txt "+%Y-%m-%d %H:%M:%S")
+else
+    INSTALL_DATE="Unknown"
+fi
+
 clear
+echo -e "${GREEN}=================================================${NC}"
+echo -e "${GREEN}║                  ${YELLOW}• FAIZ-VPN •                  ${GREEN}║${NC}"
+echo -e "${GREEN}║              ${YELLOW}PREMIUM VPS MANAGER              ${GREEN}║${NC}"
+echo -e "${GREEN}=================================================${NC}"
+echo -e "${YELLOW}VPS Information${NC}"
+echo -e "${GREEN}- IP VPS        :${NC} $IPVPS"
+echo -e "${GREEN}- Domain        :${NC} $DOMAIN"
+echo -e "${GREEN}- CPU Load      :${NC} $CPU_LOAD"
+echo -e "${GREEN}- RAM Usage     :${NC} $USED_RAM MB / $TOTAL_RAM MB ($RAM_PERCENT%)"
+echo -e "${GREEN}- Uptime        :${NC} $UPTIME"
+echo -e "${GREEN}- Install Date  :${NC} $INSTALL_DATE"
+echo -e "${GREEN}=================================================${NC}"
+
 m="\033[0;1;36m"
 y="\033[0;1;37m"
 yy="\033[0;1;32m"

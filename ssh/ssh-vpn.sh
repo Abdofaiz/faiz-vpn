@@ -15,19 +15,19 @@ MYIP=$(wget -qO- ipinfo.io/ip);
 clear
 # ==================================================
 # Link Hosting Kalian
-sshlink="raw.githubusercontent.com/Abdofaiz/cfsshws/main/ssh"
+sshlink="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/ssh"
 
 # Link Hosting Kalian Untuk Xray
-xraylink="raw.githubusercontent.com/Abdofaiz/cfsshws/main/xray"
+xraylink="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/xray"
 
 # Link Hosting Kalian Untuk Trojan Go
-trojangolink="raw.githubusercontent.com/Abdofaiz/cfsshws/main/trojango"
+trojangolink="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/trojango"
 
 # Link Hosting Kalian Untuk Stunnel5
-stunnel5link="raw.githubusercontent.com/Abdofaiz/cfsshws/main/stunnel5"
+stunnel5link="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/stunnel5"
 
 #Link Hosting Kalian Untuk Websocket
-websocketlink="raw.githubusercontent.com/Abdofaiz/cfsshws/main/websocket"
+websocketlink="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/websocket"
 
 # initializing var
 export DEBIAN_FRONTEND=noninteractive

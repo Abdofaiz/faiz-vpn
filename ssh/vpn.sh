@@ -14,7 +14,7 @@ MYIP=$(wget -qO- ipinfo.io/ip);
 
 clear
 
-sshlink="raw.githubusercontent.com/Abdofaiz/cfsshws/main/ssh"
+sshlink="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/ssh"
 
 # initialisasi var
 export DEBIAN_FRONTEND=noninteractive

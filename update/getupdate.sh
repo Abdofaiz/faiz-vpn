@@ -13,7 +13,7 @@ LIGHT='\033[0;37m'
 # Getting
 MYIP=$(wget -qO- ipinfo.io/ip);
 clear
-lizupdate="raw.githubusercontent.com/Abdofaiz/cfsshws/main/update"
+lizupdate="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/update"
 # change direct
 cd /usr/bin
 # remove file

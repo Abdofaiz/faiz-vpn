@@ -78,7 +78,7 @@ case $menu in
     7)
         clear
         echo -e "${GREEN}Updating Script...${NC}"
-        wget -q -O /usr/bin/update "https://raw.githubusercontent.com/Abdofaiz/cfsshws/main/update.sh"
+        wget -q -O /usr/bin/update "https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/update.sh"
         chmod +x /usr/bin/update
         update
         echo -e "${GREEN}Update Completed${NC}"
@@ -91,7 +91,7 @@ case $menu in
         echo -e "${YELLOW}Are you sure you want to continue? (y/n)${NC}"
         read -p "" confirm
         if [[ "$confirm" == "y" || "$confirm" == "Y" ]]; then
-            wget -q -O /usr/bin/uninstall "https://raw.githubusercontent.com/Abdofaiz/cfsshws/main/uninstall.sh"
+            wget -q -O /usr/bin/uninstall "https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/uninstall.sh"
             chmod +x /usr/bin/uninstall
             uninstall
         else
