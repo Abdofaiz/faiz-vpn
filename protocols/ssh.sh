@@ -216,6 +216,97 @@ check_ssh() {
     fi
 }
 
+renew_account() {
+    clear
+    echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
+    echo -e "${CYAN}│${NC}            ${CYAN}RENEW SSH ACCOUNT${NC}                    ${CYAN}│${NC}"
+    echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
+    echo -e ""
+    
+    read -p "Username to renew: " username
+    read -p "Add days: " duration
+    
+    if grep -q "^### $username" "$SSH_DB"; then
+        # Update expiry
+        chage -E $(date -d "+$duration days" +"%Y-%m-%d") $username
+        print_success "Account renewed successfully"
+        echo -e "New expiry: $(date -d "+$duration days" +"%Y-%m-%d")"
+    else
+        print_error "Username not found"
+    fi
+}
+
+delete_expired() {
+    clear
+    echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
+    echo -e "${CYAN}│${NC}           ${CYAN}DELETE EXPIRED USERS${NC}                  ${CYAN}│${NC}"
+    echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
+    echo -e ""
+    
+    count=0
+    while IFS= read -r line; do
+        if [[ $line =~ ^###\ ([^\ ]+) ]]; then
+            username="${BASH_REMATCH[1]}"
+            exp=$(chage -l "$username" | grep "Account expires" | cut -d: -f2)
+            exp_date=$(date -d "$exp" +%s)
+            today=$(date +%s)
+            if [ $today -gt $exp_date ]; then
+                userdel -f "$username"
+                sed -i "/^### $username/d" "$SSH_DB"
+                ((count++))
+            fi
+        fi
+    done < "$SSH_DB"
+    
+    print_success "Deleted $count expired users"
+}
+
+setup_autokill() {
+    clear
+    echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
+    echo -e "${CYAN}│${NC}            ${CYAN}AUTOKILL SSH SETUP${NC}                   ${CYAN}│${NC}"
+    echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
+    echo -e ""
+    
+    read -p "Max Multi Login (1-10): " max
+    if [[ $max =~ ^[1-9]|10$ ]]; then
+        echo "$max" > /etc/ssh/max_login
+        print_success "Autokill set to $max multi login"
+    else
+        print_error "Invalid input. Please enter a number between 1-10"
+    fi
+}
+
+check_multi() {
+    clear
+    echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
+    echo -e "${CYAN}│${NC}           ${CYAN}MULTI LOGIN CHECKER${NC}                   ${CYAN}│${NC}"
+    echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
+    echo -e ""
+    
+    if [ -f "/etc/ssh/max_login" ]; then
+        max_login=$(cat /etc/ssh/max_login)
+    else
+        max_login=2
+    fi
+    
+    echo -e "USERNAME       LOGIN COUNT"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    
+    while IFS= read -r line; do
+        if [[ $line =~ ^###\ ([^\ ]+) ]]; then
+            username="${BASH_REMATCH[1]}"
+            count=$(ps -u "$username" | grep -v "ps" | wc -l)
+            if [ $count -gt $max_login ]; then
+                printf "%-13s %d (KILLED)\n" "$username" "$count"
+                pkill -u "$username"
+            else
+                printf "%-13s %d\n" "$username" "$count"
+            fi
+        fi
+    done < "$SSH_DB"
+}
+
 # Main script
 case "$1" in
     "create")
@@ -223,6 +314,9 @@ case "$1" in
         ;;
     "trial")
         trial_account
+        ;;
+    "renew")
+        renew_account
         ;;
     "delete")
         delete_account
@@ -233,6 +327,15 @@ case "$1" in
     "check")
         check_login
         ;;
+    "expired")
+        delete_expired
+        ;;
+    "autokill")
+        setup_autokill
+        ;;
+    "multi")
+        check_multi
+        ;;
     "install")
         install_ssh
         ;;
@@ -240,7 +343,7 @@ case "$1" in
         systemctl restart ssh && print_success "SSH service restarted" || print_error "Failed to restart SSH"
         ;;
     *)
-        print_error "Usage: $0 {create|trial|delete|list|check|install|restart}"
+        print_error "Usage: $0 {create|trial|renew|delete|list|check|expired|autokill|multi|install|restart}"
         exit 1
         ;;
 esac

@@ -35,16 +35,16 @@ echo -ne "Select an option [0-10]: "
 read opt
 
 case $opt in
-    1) clear ; $PROTO_DIR/ssh.sh create ;;
-    2) clear ; $PROTO_DIR/ssh.sh trial ;;
-    3) clear ; $PROTO_DIR/ssh.sh renew ;;
-    4) clear ; $PROTO_DIR/ssh.sh delete ;;
-    5) clear ; $PROTO_DIR/ssh.sh check ;;
-    6) clear ; $PROTO_DIR/ssh.sh list ;;
-    7) clear ; $PROTO_DIR/ssh.sh expired ;;
-    8) clear ; $PROTO_DIR/ssh.sh autokill ;;
-    9) clear ; $PROTO_DIR/ssh.sh multi ;;
-    10) clear ; $PROTO_DIR/ssh.sh restart ;;
+    1) bash "$PROTO_DIR/ssh.sh" create ;;
+    2) bash "$PROTO_DIR/ssh.sh" trial ;;
+    3) bash "$PROTO_DIR/ssh.sh" renew ;;
+    4) bash "$PROTO_DIR/ssh.sh" delete ;;
+    5) bash "$PROTO_DIR/ssh.sh" check ;;
+    6) bash "$PROTO_DIR/ssh.sh" list ;;
+    7) bash "$PROTO_DIR/ssh.sh" expired ;;
+    8) bash "$PROTO_DIR/ssh.sh" autokill ;;
+    9) bash "$PROTO_DIR/ssh.sh" multi ;;
+    10) bash "$PROTO_DIR/ssh.sh" restart ;;
     0) clear ; menu ;;
     *) clear ; menu-ssh ;;
 esac 
