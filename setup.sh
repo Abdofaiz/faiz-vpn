@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==========================================
-# Color definitions (move these to the top, right after the shebang)
+# Color definitions
 RED='\033[0;31m'
 NC='\033[0m'
 GREEN='\033[0;32m'
@@ -11,6 +11,15 @@ PURPLE='\033[0;35m'
 CYAN='\033[0;36m'
 LIGHT='\033[0;37m'
 # ==========================================
+
+# Link Hosting Definitions
+sshlink="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/ssh"
+xraylink="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/xray1"
+backuplink="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/backup"
+websocketlink="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/websocket"
+ohplink="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/ohp"
+updatelink="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/update"
+sslhlink="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/sslh-fix"
 
 # Check if root
 if [ "${EUID}" -ne 0 ]; then
@@ -126,14 +135,27 @@ main_install() {
 download_and_execute() {
 		local url="https://${1}/${2}"
 		local file="${2}"
-		echo "Downloading ${file}..."
-		if ! wget "$url" -q --show-progress; then
-				echo -e "${RED}Failed to download ${file}${NC}"
-				exit 1
-		fi
-		chmod +x "$file"
-		echo "Executing ${file}..."
-		./"$file"
+		echo -e "${BLUE}Downloading ${file}...${NC}"
+		
+		# Try downloading up to 3 times
+		for i in {1..3}; do
+				if wget -q --show-progress "$url"; then
+						chmod +x "$file"
+						echo -e "${GREEN}Executing ${file}...${NC}"
+						if ./"$file"; then
+								return 0
+						else
+								echo -e "${RED}Failed to execute ${file}${NC}"
+								return 1
+						fi
+				fi
+				echo -e "${ORANGE}Attempt $i failed. Retrying...${NC}"
+				sleep 2
+		done
+		
+		echo -e "${RED}Failed to download ${file} after 3 attempts${NC}"
+		echo -e "${RED}Please check your internet connection and the URL: ${url}${NC}"
+		exit 1
 }
 
 # Cleanup function
@@ -185,32 +207,6 @@ validate_ip
 update_system
 main_install
 cleanup
-
-# ==========================================
-# Link Hosting You For Ssh Vpn
-sshlink="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/ssh"
-# Link Hosting You For Sstp
-# gl33chervpnn="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/sstp"
-# Link Hosting You For Ssr
-# gl33chervpnnn="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/ssr"
-# Link Hosting You For Shadowsocks
-# gl33chervpnnnn="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/shadowsocks"
-# Link Hosting You For Wireguard
-# gl33chervpnnnnn="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/wireguard"
-# Link Hosting You For Xray
-xraylink="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/xray1"
-# Link Hosting You For Ipsec
-# gl33chervpnnnnnnn="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/ipsec"
-# Link Hosting You For Backup
-backuplink="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/backup"
-# Link Hosting You For Websocket
-websocketlink="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/websocket"
-# Link Hosting You For Ohp
-ohplink="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/ohp"
-# link Hosting update
-updatelink="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/update"
-# link Hosting sslh-fix
-sslhlink="raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/sslh-fix"
 
 cat <<EOF> /etc/systemd/system/autosett.service
 [Unit]
