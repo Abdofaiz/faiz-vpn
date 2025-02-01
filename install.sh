@@ -95,46 +95,36 @@ copy_scripts() {
     if [ ! -f "menu.sh" ]; then
         echo -e "${RED}Error: menu.sh not found in current directory${NC}"
         exit 1
-    }
+    fi
     
     # Main menu
     cp menu.sh $SCRIPT_DIR/ || {
         echo -e "${RED}Failed to copy menu.sh${NC}"
         exit 1
     }
-    cp menu-ssh.sh $SCRIPT_DIR/menu/
-    cp menu-xray.sh $SCRIPT_DIR/menu/
-    cp menu-argo.sh $SCRIPT_DIR/menu/
-    cp menu-security.sh $SCRIPT_DIR/menu/
-    cp menu-settings.sh $SCRIPT_DIR/menu/
-    cp menu-backup.sh $SCRIPT_DIR/menu/
-    cp menu-bot.sh $SCRIPT_DIR/menu/
     
-    # Protocols
-    cp protocols/ssh-http.sh $SCRIPT_DIR/protocols/
-    cp protocols/ssh-ssl.sh $SCRIPT_DIR/protocols/
-    cp protocols/websocket-http.sh $SCRIPT_DIR/protocols/
-    cp protocols/custom-payload.sh $SCRIPT_DIR/protocols/
+    # Create menu directory if it doesn't exist
+    mkdir -p $SCRIPT_DIR/menu
     
-    # Bot scripts
-    cp bot/register-ip.sh $SCRIPT_DIR/bot/
-    cp bot/ip-lookup.sh $SCRIPT_DIR/bot/
-    cp bot/cdn-check.sh $SCRIPT_DIR/bot/
-    cp bot/banner-check.sh $SCRIPT_DIR/bot/
-    cp bot/response-check.sh $SCRIPT_DIR/bot/
-    cp bot/cert-check.sh $SCRIPT_DIR/bot/
-    cp bot/bot-settings.sh $SCRIPT_DIR/bot/
-    cp bot/monitor-bot.sh $SCRIPT_DIR/bot/
-    cp bot/backup-bot.sh $SCRIPT_DIR/bot/
-    cp bot/schedule-backup.sh $SCRIPT_DIR/bot/
+    # Copy menu scripts with error checking
+    for menu_script in menu-*.sh; do
+        if [ -f "$menu_script" ]; then
+            cp "$menu_script" "$SCRIPT_DIR/menu/" || {
+                echo -e "${RED}Failed to copy $menu_script${NC}"
+                exit 1
+            }
+        fi
+    done
     
-    # Security scripts
-    cp security/ban-ssh.sh $SCRIPT_DIR/security/
-    cp security/ban-xray.sh $SCRIPT_DIR/security/
-    cp security/unban-ssh.sh $SCRIPT_DIR/security/
-    cp security/unban-xray.sh $SCRIPT_DIR/security/
-    cp security/lock-ssh.sh $SCRIPT_DIR/security/
-    cp security/lock-xray.sh $SCRIPT_DIR/security/
+    # Create and copy to other directories
+    for dir in protocols bot security; do
+        mkdir -p "$SCRIPT_DIR/$dir"
+        if [ -d "$dir" ]; then
+            cp "$dir"/*.sh "$SCRIPT_DIR/$dir/" 2>/dev/null || {
+                echo -e "${YELLOW}Warning: No scripts found in $dir directory${NC}"
+            }
+        fi
+    done
 }
 
 # Set permissions
