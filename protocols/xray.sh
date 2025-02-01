@@ -103,23 +103,118 @@ EOF
     fi
 }
 
-# Create XRAY account
-create_account() {
+# Protocol-specific menus
+vless_menu() {
     clear
     echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
-    echo -e "${CYAN}│${NC}            ${CYAN}CREATE XRAY ACCOUNT${NC}                   ${CYAN}│${NC}"
+    echo -e "${CYAN}│${NC}              ${CYAN}VLESS MANAGER${NC}                       ${CYAN}│${NC}"
+    echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
+    echo -e ""
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e " ${GREEN}1)${NC} Create VLESS Account"
+    echo -e " ${GREEN}2)${NC} Delete VLESS Account"
+    echo -e " ${GREEN}3)${NC} List VLESS Users"
+    echo -e " ${RED}0)${NC} Back to XRAY Menu"
+    echo -e ""
+    echo -ne "Select an option [0-3]: "
+    read opt
+    
+    case $opt in
+        1) create_account "vless" ;;
+        2) delete_account "vless" ;;
+        3) list_members "vless" ;;
+        0) exec menu-xray ;;
+        *) vless_menu ;;
+    esac
+}
+
+vmess_menu() {
+    clear
+    echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
+    echo -e "${CYAN}│${NC}              ${CYAN}VMESS MANAGER${NC}                       ${CYAN}│${NC}"
+    echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
+    echo -e ""
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e " ${GREEN}1)${NC} Create VMESS Account"
+    echo -e " ${GREEN}2)${NC} Delete VMESS Account"
+    echo -e " ${GREEN}3)${NC} List VMESS Users"
+    echo -e " ${RED}0)${NC} Back to XRAY Menu"
+    echo -e ""
+    echo -ne "Select an option [0-3]: "
+    read opt
+    
+    case $opt in
+        1) create_account "vmess" ;;
+        2) delete_account "vmess" ;;
+        3) list_members "vmess" ;;
+        0) exec menu-xray ;;
+        *) vmess_menu ;;
+    esac
+}
+
+trojan_menu() {
+    clear
+    echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
+    echo -e "${CYAN}│${NC}             ${CYAN}TROJAN MANAGER${NC}                       ${CYAN}│${NC}"
+    echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
+    echo -e ""
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e " ${GREEN}1)${NC} Create Trojan Account"
+    echo -e " ${GREEN}2)${NC} Delete Trojan Account"
+    echo -e " ${GREEN}3)${NC} List Trojan Users"
+    echo -e " ${RED}0)${NC} Back to XRAY Menu"
+    echo -e ""
+    echo -ne "Select an option [0-3]: "
+    read opt
+    
+    case $opt in
+        1) create_account "trojan" ;;
+        2) delete_account "trojan" ;;
+        3) list_members "trojan" ;;
+        0) exec menu-xray ;;
+        *) trojan_menu ;;
+    esac
+}
+
+# Create account for specific protocol
+create_account() {
+    local proto=$1
+    clear
+    echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
+    echo -e "${CYAN}│${NC}            ${CYAN}CREATE ${proto^^} ACCOUNT${NC}                  ${CYAN}│${NC}"
     echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
     echo -e ""
     
     read -p "Username : " username
     read -p "Duration (days) : " duration
     
-    # Generate UUID
-    uuid=$(xray uuid)
+    # Generate UUID/Password
+    local id
+    if [ "$proto" = "trojan" ]; then
+        id=$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 16)
+    else
+        id=$(xray uuid)
+    fi
     
-    # Add client to config
-    tmp=$(mktemp)
-    jq --arg uuid "$uuid" '.inbounds[0].settings.clients += [{"id": $uuid, "email": "'"$username"'"}]' "$XRAY_DB" > "$tmp"
+    # Add client to config based on protocol
+    local tmp=$(mktemp)
+    case $proto in
+        "vless")
+            jq --arg id "$id" --arg email "$username" \
+                '.inbounds[] | select(.protocol == "vless") | .settings.clients += [{"id": $id, "email": $email}]' \
+                "$XRAY_DB" > "$tmp"
+            ;;
+        "vmess")
+            jq --arg id "$id" --arg email "$username" \
+                '.inbounds[] | select(.protocol == "vmess") | .settings.clients += [{"id": $id, "email": $email, "alterId": 0}]' \
+                "$XRAY_DB" > "$tmp"
+            ;;
+        "trojan")
+            jq --arg id "$id" --arg email "$username" \
+                '.inbounds[] | select(.protocol == "trojan") | .settings.clients += [{"password": $id, "email": $email}]' \
+                "$XRAY_DB" > "$tmp"
+            ;;
+    esac
     mv "$tmp" "$XRAY_DB"
     
     # Restart service
@@ -127,34 +222,37 @@ create_account() {
     
     print_success "Account created successfully"
     echo -e "Username : $username"
-    echo -e "UUID     : $uuid"
+    echo -e "ID/Pass  : $id"
+    echo -e "Protocol : ${proto^^}"
     echo -e "Duration : $duration Days"
     echo -e "Expires  : $(date -d "+$duration days" +"%Y-%m-%d")"
 }
 
 # List XRAY users
 list_members() {
+    local proto=$1
     clear
     echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
     echo -e "${CYAN}│${NC}               ${CYAN}XRAY MEMBER LIST${NC}                   ${CYAN}│${NC}"
     echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
     echo -e ""
     
-    echo -e "USERNAME          UUID"
+    echo -e "USERNAME          ID/Pass"
     echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     
-    jq -r '.inbounds[0].settings.clients[] | "\(.email) \(.id)"' "$XRAY_DB" | \
-    while read -r email uuid; do
-        printf "%-15s %s\n" "$email" "$uuid"
+    jq -r ".inbounds[] | select(.protocol == \"$proto\") | .settings.clients[] | \"\(.email) \(.id)\"" "$XRAY_DB" | \
+    while read -r email id; do
+        printf "%-15s %s\n" "$email" "$id"
     done
 }
 
 # Delete XRAY account
 delete_account() {
+    local proto=$1
     read -p "Username to delete: " username
     
     tmp=$(mktemp)
-    jq --arg user "$username" '.inbounds[0].settings.clients = [.inbounds[0].settings.clients[] | select(.email != $user)]' "$XRAY_DB" > "$tmp"
+    jq --arg user "$username" ".inbounds[] | select(.protocol == \"$proto\") | .settings.clients = [.inbounds[].settings.clients[] | select(.email != $user)]" "$XRAY_DB" > "$tmp"
     mv "$tmp" "$XRAY_DB"
     
     systemctl restart xray
@@ -167,20 +265,29 @@ case "$1" in
         install_xray
         return_to_menu
         ;;
-    "create")
-        create_account
+    "vless-menu")
+        vless_menu
+        ;;
+    "vmess-menu")
+        vmess_menu
+        ;;
+    "trojan-menu")
+        trojan_menu
+        ;;
+    "list-all")
+        list_all_members
         return_to_menu
         ;;
-    "list")
-        list_members
+    "status")
+        check_status
         return_to_menu
         ;;
-    "delete")
-        delete_account
+    "update-cert")
+        update_certificate
         return_to_menu
         ;;
     *)
-        print_error "Usage: $0 {install|create|list|delete}"
+        print_error "Usage: $0 {install|vless-menu|vmess-menu|trojan-menu|list-all|status|update-cert}"
         exit 1
         ;;
 esac 
