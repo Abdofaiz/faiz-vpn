@@ -17,6 +17,11 @@ BOT_DIR="$SCRIPT_DIR/bot"
 echo -e "${CYAN}Creating directories...${NC}"
 mkdir -p "$SCRIPT_DIR"/{menu,protocols,bot} /etc/ssh /etc/xray /var/lib/crot /etc/vpn/{payloads,ssl} /etc/bot/{backups,.config}
 
+# Download protocol scripts
+echo -e "${CYAN}Downloading protocol scripts...${NC}"
+wget -O "$PROTO_DIR/settings.sh" "https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/protocols/settings.sh"
+chmod +x "$PROTO_DIR/settings.sh"
+
 # Create database files
 touch /etc/ssh/.ssh.db /etc/xray/config.json /var/lib/crot/data-user-l2tp
 

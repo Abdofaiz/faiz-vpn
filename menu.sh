@@ -127,13 +127,3 @@ case $opt in
     0) clear ; exit ;;
     *) clear ; menu ;;
 esac
-
-# Download settings script
-wget -O /usr/local/vpn-script/protocols/settings.sh "https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/protocols/settings.sh"
-chmod +x /usr/local/vpn-script/protocols/settings.sh
-
-# Create symlink
-ln -sf /usr/local/vpn-script/protocols/settings.sh /usr/local/bin/settings
-
-# Test menu
-menu
