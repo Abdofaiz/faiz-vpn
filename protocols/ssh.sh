@@ -7,6 +7,10 @@ YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
+# Paths
+SSH_DB="/etc/ssh/.ssh.db"
+CONFIG_DIR="/etc/vpn"
+
 # Print functions
 print_info() {
     echo -e "${CYAN}[INFO]${NC} $1"
@@ -18,6 +22,104 @@ print_success() {
 
 print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
+}
+
+# User Management Functions
+create_account() {
+    clear
+    echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
+    echo -e "${CYAN}│${NC}            ${CYAN}CREATE SSH ACCOUNT${NC}                    ${CYAN}│${NC}"
+    echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
+    echo -e ""
+    
+    read -p "Username : " username
+    read -p "Password : " password
+    read -p "Duration (days) : " duration
+    
+    # Check if username exists
+    if grep -q "^### $username" "$SSH_DB"; then
+        print_error "Username already exists"
+        return 1
+    fi
+    
+    # Create account
+    useradd -e $(date -d "+$duration days" +"%Y-%m-%d") -s /bin/false -M $username
+    echo -e "$password\n$password" | passwd $username &> /dev/null
+    
+    # Save to database
+    echo "### $username $password $(date +%s) $duration" >> "$SSH_DB"
+    
+    print_success "Account created successfully"
+    echo -e "Username : $username"
+    echo -e "Password : $password"
+    echo -e "Duration : $duration Days"
+    echo -e "Expires  : $(date -d "+$duration days" +"%Y-%m-%d")"
+}
+
+trial_account() {
+    username="trial$(date +%s)"
+    password="trial$(date +%d%m)"
+    duration=1
+    
+    useradd -e $(date -d "+$duration days" +"%Y-%m-%d") -s /bin/false -M $username
+    echo -e "$password\n$password" | passwd $username &> /dev/null
+    echo "### $username $password $(date +%s) $duration" >> "$SSH_DB"
+    
+    print_success "Trial account created"
+    echo -e "Username : $username"
+    echo -e "Password : $password"
+    echo -e "Duration : $duration Day"
+}
+
+delete_account() {
+    read -p "Username to delete: " username
+    if grep -q "^### $username" "$SSH_DB"; then
+        userdel -f $username
+        sed -i "/^### $username/d" "$SSH_DB"
+        print_success "Account $username deleted"
+    else
+        print_error "Username not found"
+    fi
+}
+
+list_members() {
+    clear
+    echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
+    echo -e "${CYAN}│${NC}               ${CYAN}SSH MEMBER LIST${NC}                    ${CYAN}│${NC}"
+    echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
+    echo -e ""
+    
+    echo -e "USERNAME          EXPIRY DATE"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    while IFS= read -r line; do
+        if [[ $line =~ ^###\ ([^\ ]+) ]]; then
+            username="${BASH_REMATCH[1]}"
+            expiry=$(chage -l "$username" | grep "Account expires" | cut -d: -f2)
+            printf "%-15s %s\n" "$username" "$expiry"
+        fi
+    done < "$SSH_DB"
+}
+
+check_login() {
+    clear
+    echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
+    echo -e "${CYAN}│${NC}             ${CYAN}SSH LOGIN MONITOR${NC}                    ${CYAN}│${NC}"
+    echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
+    echo -e ""
+    
+    data=($(ps aux | grep -i sshd | grep -i priv | awk '{print $2}'))
+    echo -e "ID  USERNAME       IP ADDRESS"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    
+    for pid in "${data[@]}"; do
+        if [ "$(cat /proc/$pid/comm 2>/dev/null)" = "sshd" ]; then
+            user=$(cat /proc/$pid/environ | tr '\0' '\n' | grep '^USER=' | cut -d= -f2)
+            ip=$(netstat -np 2>/dev/null | grep $pid | awk '{print $5}' | cut -d: -f1)
+            if [ ! -z "$user" ] && [ ! -z "$ip" ]; then
+                printf "%-3s %-13s %s\n" "$pid" "$user" "$ip"
+            fi
+        fi
+    done
 }
 
 # Install and configure OpenSSH
@@ -116,19 +218,33 @@ check_ssh() {
 
 # Main script
 case "$1" in
-    "install")
-        install_ssh
+    "create")
+        create_account
+        ;;
+    "trial")
+        trial_account
+        ;;
+    "delete")
+        delete_account
+        ;;
+    "list")
+        list_members
         ;;
     "check")
-        check_ssh
+        check_login
+        ;;
+    "install")
+        install_ssh
         ;;
     "restart")
         systemctl restart ssh && print_success "SSH service restarted" || print_error "Failed to restart SSH"
         ;;
     *)
-        print_error "Usage: $0 {install|check|restart}"
+        print_error "Usage: $0 {create|trial|delete|list|check|install|restart}"
         exit 1
         ;;
 esac
+
+read -n 1 -s -r -p "Press any key to return to menu"
 
 exit 0 
