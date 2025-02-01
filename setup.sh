@@ -15,6 +15,19 @@ BOT_DIR="$SCRIPT_DIR/bot"
 MENU_DIR="$SCRIPT_DIR/menu"
 PROTO_DIR="$SCRIPT_DIR/protocols"
 
+# Required files check
+declare -A REQUIRED_FILES=(
+    ["menu.sh"]="Main Menu"
+    ["menu/menu-ssh.sh"]="SSH Menu"
+    ["menu/menu-xray.sh"]="Xray Menu"
+    ["menu/menu-bot.sh"]="Bot Menu"
+    ["protocols/ssh.sh"]="SSH Protocol"
+    ["protocols/websocket.sh"]="WebSocket Protocol"
+    ["protocols/xray.sh"]="Xray Protocol"
+    ["bot/register-ip.sh"]="IP Registration"
+    ["bot/ip-lookup.sh"]="IP Lookup"
+)
+
 # Banner
 clear
 echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
@@ -52,6 +65,11 @@ download_script() {
     wget -q "$REPO_RAW/$file" -O "$dest"
     if [ $? -ne 0 ]; then
         echo -e "${RED}Failed to download $file${NC}"
+        # Create basic script if it's a required file
+        if [[ "${REQUIRED_FILES[$file]}" ]]; then
+            echo -e "${YELLOW}Creating basic ${REQUIRED_FILES[$file]} script...${NC}"
+            create_basic_script "$file" "$dest"
+        fi
         return 1
     fi
     
@@ -62,6 +80,57 @@ download_script() {
     fi
     
     echo -e "${GREEN}Downloaded $file${NC}"
+}
+
+# Create basic script function
+create_basic_script() {
+    local file="$1"
+    local dest="$2"
+    
+    case "$file" in
+        "menu.sh")
+            cat > "$dest" << 'EOF'
+#!/bin/bash
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+# Banner
+clear
+echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
+echo -e "${CYAN}│${NC}                ${CYAN}MAIN MENU${NC}                         ${CYAN}│${NC}"
+echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
+echo -e ""
+echo -e " ${GREEN}1)${NC} SSH Menu"
+echo -e " ${GREEN}2)${NC} Xray Menu"
+echo -e " ${GREEN}3)${NC} Bot Menu"
+echo -e " ${RED}0)${NC} Exit"
+echo -e ""
+read -p "Select option [0-3]: " opt
+
+case $opt in
+    1) menu-ssh ;;
+    2) menu-xray ;;
+    3) menu-bot ;;
+    0) exit ;;
+    *) menu ;;
+esac
+EOF
+            ;;
+        "menu/menu-ssh.sh")
+            cat > "$dest" << 'EOF'
+#!/bin/bash
+echo "SSH Menu - Coming Soon"
+read -n 1 -s -r -p "Press any key to return to menu"
+menu
+EOF
+            ;;
+        # Add more cases for other required files
+    esac
+    
+    chmod 755 "$dest"
 }
 
 # Create symlink function
@@ -82,7 +151,7 @@ create_symlink() {
 download_script "menu.sh" "$SCRIPT_DIR/menu.sh"
 
 # Download menu scripts
-for script in menu-ssh.sh menu-xray.sh menu-bot.sh menu-security.sh menu-settings.sh menu-backup.sh; do
+for script in menu-ssh.sh menu-xray.sh menu-bot.sh; do
     download_script "menu/$script" "$MENU_DIR/$script"
 done
 
@@ -92,8 +161,7 @@ for script in ssh.sh websocket.sh xray.sh; do
 done
 
 # Download bot scripts
-for script in register-ip.sh ip-lookup.sh bot-settings.sh cdn-check.sh banner-check.sh \
-              response-check.sh cert-check.sh monitor-bot.sh backup-bot.sh schedule-backup.sh; do
+for script in register-ip.sh ip-lookup.sh; do
     download_script "bot/$script" "$BOT_DIR/$script"
 done
 
