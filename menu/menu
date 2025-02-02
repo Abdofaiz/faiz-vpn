@@ -1,0 +1,120 @@
+#!/bin/bash
+# Main Menu Script
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+# Load system information
+HOSTNAME=$(hostname)
+IPADDR=$(wget -qO- ipv4.icanhazip.com)
+ISP=$(curl -s ipinfo.io/org)
+CITY=$(curl -s ipinfo.io/city)
+OS=$(cat /etc/os-release | grep PRETTY_NAME | cut -d '"' -f2)
+
+# Show banner
+show_banner() {
+    clear
+    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "               ${YELLOW}VPS MANAGEMENT SCRIPT${NC}               "
+    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e " ${YELLOW}System Information:${NC}"
+    echo -e " ${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e " ${GREEN}❇️ Hostname    ${NC}: $HOSTNAME"
+    echo -e " ${GREEN}❇️ IP Address  ${NC}: $IPADDR"
+    echo -e " ${GREEN}❇️ ISP         ${NC}: $ISP"
+    echo -e " ${GREEN}❇️ City        ${NC}: $CITY"
+    echo -e " ${GREEN}❇️ OS          ${NC}: $OS"
+    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+}
+
+# Show system status
+show_status() {
+    echo -e " ${YELLOW}Service Status:${NC}"
+    echo -e " ${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e " ${GREEN}❇️ SSH         ${NC}: $(systemctl is-active ssh)"
+    echo -e " ${GREEN}❇️ XRAY        ${NC}: $(systemctl is-active xray)"
+    echo -e " ${GREEN}❇️ Nginx       ${NC}: $(systemctl is-active nginx)"
+    echo -e " ${GREEN}❇️ Dropbear    ${NC}: $(systemctl is-active dropbear)"
+    echo -e " ${GREEN}❇️ Stunnel4    ${NC}: $(systemctl is-active stunnel4)"
+    echo -e " ${GREEN}❇️ Fail2Ban    ${NC}: $(systemctl is-active fail2ban)"
+    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+}
+
+# Main menu
+while true; do
+    show_banner
+    show_status
+    echo -e " ${YELLOW}VPN Menu:${NC}"
+    echo -e " ${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e " ${GREEN}[1]${NC} • SSH Menu          ${GREEN}[7]${NC} • System Information"
+    echo -e " ${GREEN}[2]${NC} • XRAY Menu         ${GREEN}[8]${NC} • Running Services"
+    echo -e " ${GREEN}[3]${NC} • L2TP Menu         ${GREEN}[9]${NC} • Clear RAM Cache"
+    echo -e " ${GREEN}[4]${NC} • PPTP Menu         ${GREEN}[10]${NC} • Change Port"
+    echo -e " ${GREEN}[5]${NC} • SSTP Menu         ${GREEN}11]${NC} • Firewall Settings"
+    echo -e " ${GREEN}[6]${NC} • Trojan Menu       ${GREEN}[12]${NC} • Update Script"
+    echo -e " ${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e " ${YELLOW}System Menu:${NC}"
+    echo -e " ${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e " ${GREEN}[13]${NC} • Add Domain        ${GREEN}[17]${NC} • Backup Menu"
+    echo -e " ${GREEN}[14]${NC} • Renew Cert        ${GREEN}[18]${NC} • Auto Reboot"
+    echo -e " ${GREEN}[15]${NC} • Change Password   ${GREEN}[19]${NC} • Speedtest"
+    echo -e " ${GREEN}[16]${NC} • WebSocket Menu    ${GREEN}[20]${NC} • About Script"
+    echo -e " ${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e " ${GREEN}[0]${NC} • Exit Menu"
+    echo -e " ${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e ""
+    read -p " Select menu: " choice
+
+    case $choice in
+        1) ssh ;;
+        2) xray ;;
+        3) l2tp ;;
+        4) pptp ;;
+        5) sstp ;;
+        6) trojan ;;
+        7) show_system_info ;;
+        8) show_running_services ;;
+        9) clear_ram ;;
+        10) port ;;
+        11) firewall ;;
+        12) 
+            echo -e "${YELLOW}Updating script...${NC}"
+            wget -q -O /usr/local/bin/menu "https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/menu"
+            chmod +x /usr/local/bin/menu
+            echo -e "${GREEN}Script updated successfully!${NC}"
+            sleep 2
+            exec menu
+            ;;
+        13) domain ;;
+        14) certv2ray ;;
+        15) passwd ;;
+        16) wss ;;
+        17) backup ;;
+        18) autoreboot ;;
+        19) speedtest ;;
+        20)
+            echo -e ""
+            echo -e " ${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+            echo -e " ${YELLOW}              SCRIPT INFORMATION                 ${NC}"
+            echo -e " ${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+            echo -e " ${GREEN}❇️ Developer   ${NC}: Your Name"
+            echo -e " ${GREEN}❇️ Version     ${NC}: 1.0"
+            echo -e " ${GREEN}❇️ Client Name ${NC}: VPS Script"
+            echo -e " ${GREEN}❇️ Expiry Date ${NC}: Lifetime"
+            echo -e " ${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+            ;;
+        0) 
+            clear
+            echo -e "${GREEN}Thank you for using this script${NC}"
+            exit 0 
+            ;;
+        *) 
+            echo -e "${RED}Please enter a valid number [0-20]${NC}"
+            sleep 2
+            ;;
+    esac
+done 
