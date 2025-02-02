@@ -5,71 +5,46 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
 CYAN='\033[0;36m'
+LIGHT='\033[0;37m'
 NC='\033[0m'
 
-# Configuration
-BOT_TOKEN=$(cat /etc/bot/.token)
-ADMIN_ID=$(cat /etc/bot/.admin)
-API_URL="https://api.telegram.org/bot$BOT_TOKEN"
+# Config paths
+BOT_CONFIG="/etc/bot/.config"
+IP_DB="/etc/bot/registered_ips.db"
 
-# Banner
 clear
 echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
-echo -e "${CYAN}│${NC}             ${CYAN}REGISTER IP ADDRESS${NC}                  ${CYAN}│${NC}"
+echo -e "${CYAN}│${NC}            ${CYAN}REGISTER IP ADDRESS${NC}                   ${CYAN}│${NC}"
 echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
 echo -e ""
 
-# Get current IP
-CURRENT_IP=$(curl -s ipv4.icanhazip.com)
-echo -e "Current IP: ${GREEN}$CURRENT_IP${NC}"
-echo -e ""
+# Get user input
+read -p "IP Address : " ip
+read -p "Client Name : " client
+read -p "Duration (days) : " duration
 
-# Check if IP is already registered
-if [ -f "/etc/bot/.registered_ips" ]; then
-    if grep -q "$CURRENT_IP" "/etc/bot/.registered_ips"; then
-        echo -e "${YELLOW}This IP is already registered${NC}"
-        echo -e ""
-        read -n 1 -s -r -p "Press any key to back on menu"
-        menu-bot
-        exit 0
-    fi
-fi
-
-# Get registration details
-echo -ne "Enter your name: "
-read name
-echo -ne "Enter your email: "
-read email
-
-# Validate email format
-if [[ ! "$email" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$ ]]; then
-    echo -e ""
-    echo -e "${RED}Invalid email format${NC}"
-    echo -e ""
-    read -n 1 -s -r -p "Press any key to back on menu"
-    menu-bot
+# Validate IP format
+if ! [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+    echo -e "${RED}Error: Invalid IP format${NC}"
     exit 1
 fi
 
-# Send registration request to admin via bot
-MESSAGE="New IP Registration Request:
-Name: $name
-Email: $email
-IP: $CURRENT_IP
-Date: $(date)"
+# Check if IP exists
+if grep -q "^### $ip" "$IP_DB"; then
+    echo -e "${RED}Error: IP already registered${NC}"
+    exit 1
+fi
 
-curl -s -X POST "$API_URL/sendMessage" \
-    -d "chat_id=$ADMIN_ID" \
-    -d "text=$MESSAGE" \
-    -d "parse_mode=HTML"
+# Calculate expiry
+exp=$(date -d "+$duration days" +"%Y-%m-%d")
 
-# Save registration request
-echo "$CURRENT_IP|$name|$email|$(date +%Y-%m-%d)" >> "/etc/bot/.pending_ips"
+# Save to database
+echo "### $ip $client $exp" >> "$IP_DB"
 
-echo -e ""
-echo -e "${GREEN}Registration request sent to admin${NC}"
-echo -e "${YELLOW}Please wait for approval${NC}"
-echo -e ""
-read -n 1 -s -r -p "Press any key to back on menu"
-menu-bot 
+# Success message
+echo -e "${GREEN}IP Address registered successfully${NC}"
+echo -e "IP      : $ip"
+echo -e "Client  : $client"
+echo -e "Expires : $exp" 
