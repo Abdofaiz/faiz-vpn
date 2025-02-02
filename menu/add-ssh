@@ -1,0 +1,28 @@
+#!/bin/bash
+# SSH Account Creation
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+clear
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "               CREATE SSH ACCOUNT"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+
+read -p "Username : " username
+read -p "Password : " password
+read -p "Duration (days) : " duration
+
+useradd -e $(date -d "$duration days" +"%Y-%m-%d") -s /bin/false -M $username
+echo -e "$password\n$password" | passwd $username &> /dev/null
+
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "        SSH Account Created Successfully"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "Username      : $username"
+echo -e "Password      : $password"
+echo -e "Duration      : $duration days"
+echo -e "Expired Date  : $(date -d "$duration days" +"%Y-%m-%d")"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}" 
