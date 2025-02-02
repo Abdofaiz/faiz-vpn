@@ -28,34 +28,73 @@ apt install -y wget curl jq unzip
 echo -e "\n${BLUE}[2/7]${NC} Installing dependencies..."
 apt install -y nginx python3 python3-pip stunnel4 dropbear fail2ban
 
-# Download script files
-echo -e "\n${BLUE}[3/7]${NC} Downloading script files..."
-cd /root
-rm -rf /root/faiz-vpn-main
-wget -O faiz-vpn.zip https://github.com/Abdofaiz/faiz-vpn/archive/refs/heads/main.zip
-unzip -o faiz-vpn.zip
-rm -f faiz-vpn.zip
+# Create directory structure
+echo -e "\n${BLUE}[3/7]${NC} Creating directory structure..."
+mkdir -p /root/autoscript/{xray,nginx,menu}
+mkdir -p /usr/local/etc/xray
+mkdir -p /etc/nginx/conf.d
 
 # Install XRAY
 echo -e "\n${BLUE}[4/7]${NC} Installing XRAY..."
 bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
 
-# Setup configurations
+# Setup XRAY config
 echo -e "\n${BLUE}[5/7]${NC} Setting up configurations..."
-mkdir -p /usr/local/etc/xray
-mkdir -p /etc/nginx/conf.d
-mkdir -p /root/autoscript
+cat > /usr/local/etc/xray/config.json << EOF
+{
+    "inbounds": [
+        {
+            "port": 443,
+            "protocol": "vless",
+            "settings": {
+                "clients": [],
+                "decryption": "none"
+            },
+            "streamSettings": {
+                "network": "tcp",
+                "security": "tls",
+                "tlsSettings": {
+                    "alpn": ["http/1.1"]
+                }
+            }
+        }
+    ],
+    "outbounds": [
+        {
+            "protocol": "freedom"
+        }
+    ]
+}
+EOF
 
-# Copy configuration files
-cd /root/faiz-vpn-main
-cp -r * /root/autoscript/
-cp -f xray/config.json /usr/local/etc/xray/
-cp -f nginx/xray.conf /etc/nginx/conf.d/
+# Setup Nginx config
+cat > /etc/nginx/conf.d/xray.conf << EOF
+server {
+    listen 80;
+    server_name _;
+    root /var/www/html;
+    
+    location / {
+        try_files \$uri \$uri/ /index.html;
+    }
+    
+    location /xray {
+        proxy_redirect off;
+        proxy_pass http://127.0.0.1:443;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host \$host;
+    }
+}
+EOF
 
 # Install menu scripts
 echo -e "\n${BLUE}[6/7]${NC} Installing menu scripts..."
-chmod +x /root/autoscript/menu/*
-cp -f /root/autoscript/menu/* /usr/local/bin/
+for script in menu ssh xray cert port domain backup ws; do
+    wget -O /usr/local/bin/$script https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/$script
+    chmod +x /usr/local/bin/$script
+done
 
 # Configure services
 echo -e "\n${BLUE}[7/7]${NC} Configuring services..."
