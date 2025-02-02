@@ -126,6 +126,44 @@ YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
+# System Information
+clear_ram() {
+    sync; echo 3 > /proc/sys/vm/drop_caches
+    echo -e "${GREEN}RAM cleared successfully!${NC}"
+}
+
+show_system_info() {
+    clear
+    echo -e "${BLUE}=============================${NC}"
+    echo -e "${YELLOW}     SYSTEM INFORMATION     ${NC}"
+    echo -e "${BLUE}=============================${NC}"
+    echo -e ""
+    echo -e "OS: $(cat /etc/os-release | grep PRETTY_NAME | cut -d '"' -f2)"
+    echo -e "Kernel: $(uname -r)"
+    echo -e "Uptime: $(uptime -p)"
+    echo -e "CPU Load: $(cat /proc/loadavg | awk '{print $1 ", " $2 ", " $3}')"
+    echo -e "RAM Usage: $(free -m | awk 'NR==2{printf "%.2f%%", $3*100/$2}')"
+    echo -e "Disk Usage: $(df -h / | awk 'NR==2{print $5}')"
+    echo -e ""
+    read -n 1 -s -r -p "Press any key to continue"
+}
+
+show_running_services() {
+    clear
+    echo -e "${BLUE}=============================${NC}"
+    echo -e "${YELLOW}     RUNNING SERVICES     ${NC}"
+    echo -e "${BLUE}=============================${NC}"
+    echo -e ""
+    echo -e "NGINX: $(systemctl is-active nginx)"
+    echo -e "XRAY: $(systemctl is-active xray)"
+    echo -e "SSH: $(systemctl is-active ssh)"
+    echo -e "Dropbear: $(systemctl is-active dropbear)"
+    echo -e "Stunnel4: $(systemctl is-active stunnel4)"
+    echo -e "Fail2Ban: $(systemctl is-active fail2ban)"
+    echo -e ""
+    read -n 1 -s -r -p "Press any key to continue"
+}
+
 while true; do
     clear
     echo -e "${BLUE}=============================${NC}"
@@ -137,14 +175,43 @@ while true; do
     echo -e "${GREEN}3${NC}. Domain Settings"
     echo -e "${GREEN}4${NC}. Backup Menu"
     echo -e "${GREEN}5${NC}. System Settings"
+    echo -e ""
+    echo -e "${BLUE}SYSTEM${NC}"
+    echo -e "${GREEN}6${NC}. System Information"
+    echo -e "${GREEN}7${NC}. Running Services"
+    echo -e "${GREEN}8${NC}. Clear RAM Cache"
+    echo -e "${GREEN}9${NC}. Reboot System"
+    echo -e ""
+    echo -e "${BLUE}SETTINGS${NC}"
+    echo -e "${GREEN}10${NC}. Change Port"
+    echo -e "${GREEN}11${NC}. Firewall Settings"
+    echo -e "${GREEN}12${NC}. Update Script"
+    echo -e ""
     echo -e "${GREEN}0${NC}. Exit"
     echo -e ""
     read -p "Select option: " choice
     case $choice in
         1) ssh ;;
         2) xray ;;
+        3) domain ;;
+        4) backup ;;
+        5) settings ;;
+        6) show_system_info ;;
+        7) show_running_services ;;
+        8) clear_ram ;;
+        9) reboot ;;
+        10) port ;;
+        11) firewall ;;
+        12) 
+            echo -e "${YELLOW}Updating script...${NC}"
+            wget -q -O /usr/local/bin/menu "https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/menu"
+            chmod +x /usr/local/bin/menu
+            echo -e "${GREEN}Script updated successfully!${NC}"
+            sleep 2
+            exec menu
+            ;;
         0) break ;;
-        *) echo -e "${RED}Feature coming soon...${NC}" ;;
+        *) echo -e "${RED}Invalid option${NC}" ;;
     esac
     read -n 1 -s -r -p "Press any key to continue"
 done
