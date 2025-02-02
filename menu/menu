@@ -19,7 +19,7 @@ OS=$(cat /etc/os-release | grep PRETTY_NAME | cut -d '"' -f2)
 show_banner() {
     clear
     echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "               ${YELLOW}VPS MANAGEMENT SCRIPT${NC}               "
+    echo -e "               ${YELLOW}PREMIUM VPS MANAGER${NC}               "
     echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo -e " ${YELLOW}System Information:${NC}"
     echo -e " ${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
@@ -31,79 +31,98 @@ show_banner() {
     echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 }
 
-# Show system status
-show_status() {
-    echo -e " ${YELLOW}Service Status:${NC}"
-    echo -e " ${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e " ${GREEN}❇️ SSH         ${NC}: $(systemctl is-active ssh)"
-    echo -e " ${GREEN}❇️ XRAY        ${NC}: $(systemctl is-active xray)"
-    echo -e " ${GREEN}❇️ Nginx       ${NC}: $(systemctl is-active nginx)"
-    echo -e " ${GREEN}❇️ Dropbear    ${NC}: $(systemctl is-active dropbear)"
-    echo -e " ${GREEN}❇️ Stunnel4    ${NC}: $(systemctl is-active stunnel4)"
-    echo -e " ${GREEN}❇️ Fail2Ban    ${NC}: $(systemctl is-active fail2ban)"
-    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-}
-
 # Main menu
 while true; do
     show_banner
-    show_status
-    echo -e " ${YELLOW}VPN Menu:${NC}"
+    echo -e " ${YELLOW}SSH & OpenVPN Menu${NC}:"
     echo -e " ${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e " ${GREEN}[1]${NC} • SSH Menu          ${GREEN}[7]${NC} • System Information"
-    echo -e " ${GREEN}[2]${NC} • XRAY Menu         ${GREEN}[8]${NC} • Running Services"
-    echo -e " ${GREEN}[3]${NC} • L2TP Menu         ${GREEN}[9]${NC} • Clear RAM Cache"
-    echo -e " ${GREEN}[4]${NC} • PPTP Menu         ${GREEN}[10]${NC} • Change Port"
-    echo -e " ${GREEN}[5]${NC} • SSTP Menu         ${GREEN}11]${NC} • Firewall Settings"
-    echo -e " ${GREEN}[6]${NC} • Trojan Menu       ${GREEN}[12]${NC} • Update Script"
+    echo -e " ${GREEN}[1]${NC} • Create SSH Account     ${GREEN}[11]${NC} • Create Trial SSH"
+    echo -e " ${GREEN}[2]${NC} • Generate SSH Account   ${GREEN}[12]${NC} • Delete SSH Account"
+    echo -e " ${GREEN}[3]${NC} • Extend SSH Account     ${GREEN}[13]${NC} • Check SSH Users"
+    echo -e " ${GREEN}[4]${NC} • Delete Expired Users   ${GREEN}[14]${NC} • Monitor SSH Users"
+    
+    echo -e "\n ${YELLOW}XRAY/V2Ray Menu${NC}:"
     echo -e " ${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e " ${YELLOW}System Menu:${NC}"
+    echo -e " ${GREEN}[5]${NC} • Create XRAY Account    ${GREEN}[15]${NC} • Create Trial XRAY"
+    echo -e " ${GREEN}[6]${NC} • Delete XRAY Account    ${GREEN}[16]${NC} • Check XRAY Users"
+    echo -e " ${GREEN}[7]${NC} • Extend XRAY Account    ${GREEN}[17]${NC} • Monitor XRAY Users"
+    
+    echo -e "\n ${YELLOW}Trojan Menu${NC}:"
     echo -e " ${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e " ${GREEN}[13]${NC} • Add Domain        ${GREEN}[17]${NC} • Backup Menu"
-    echo -e " ${GREEN}[14]${NC} • Renew Cert        ${GREEN}[18]${NC} • Auto Reboot"
-    echo -e " ${GREEN}[15]${NC} • Change Password   ${GREEN}[19]${NC} • Speedtest"
-    echo -e " ${GREEN}[16]${NC} • WebSocket Menu    ${GREEN}[20]${NC} • About Script"
+    echo -e " ${GREEN}[8]${NC} • Create Trojan Account  ${GREEN}[18]${NC} • Create Trial Trojan"
+    echo -e " ${GREEN}[9]${NC} • Delete Trojan Account  ${GREEN}[19]${NC} • Check Trojan Users"
+    echo -e " ${GREEN}[10]${NC} • Extend Trojan Account ${GREEN}[20]${NC} • Monitor Trojan Users"
+    
+    echo -e "\n ${YELLOW}System Menu${NC}:"
     echo -e " ${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e " ${GREEN}[21]${NC} • Add/Change Domain     ${GREEN}[26]${NC} • Change Port Services"
+    echo -e " ${GREEN}[22]${NC} • Change DNS Settings   ${GREEN}[27]${NC} • Autobackup Data"
+    echo -e " ${GREEN}[23]${NC} • Set Auto Reboot      ${GREEN}[28]${NC} • Backup Data"
+    echo -e " ${GREEN}[24]${NC} • Check Usage RAM       ${GREEN}[29]${NC} • Restore Data"
+    echo -e " ${GREEN}[25]${NC} • Speedtest VPS        ${GREEN}[30]${NC} • Install Webmin"
+    
+    echo -e "\n ${YELLOW}Additional Menu${NC}:"
+    echo -e " ${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e " ${GREEN}[31]${NC} • Add Cloudflare DNS   ${GREEN}[36]${NC} • Install BBR"
+    echo -e " ${GREEN}[32]${NC} • Cloudflare Add-Ons   ${GREEN}[37]${NC} • TCP Tweak"
+    echo -e " ${GREEN}[33]${NC} • Point Domain         ${GREEN}[38]${NC} • Restart Services"
+    echo -e " ${GREEN}[34]${NC} • Change Timezone      ${GREEN}[39]${NC} • System Information"
+    echo -e " ${GREEN}[35]${NC} • Update Script        ${GREEN}[40]${NC} • About Script"
+    
+    echo -e "\n ${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo -e " ${GREEN}[0]${NC} • Exit Menu"
     echo -e " ${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo -e ""
     read -p " Select menu: " choice
 
     case $choice in
-        1) ssh ;;
-        2) xray ;;
-        3) l2tp ;;
-        4) pptp ;;
-        5) sstp ;;
-        6) trojan ;;
-        7) show_system_info ;;
-        8) show_running_services ;;
-        9) clear_ram ;;
-        10) port ;;
-        11) firewall ;;
-        12) 
-            echo -e "${YELLOW}Updating script...${NC}"
-            wget -q -O /usr/local/bin/menu "https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/menu"
-            chmod +x /usr/local/bin/menu
-            echo -e "${GREEN}Script updated successfully!${NC}"
-            sleep 2
-            exec menu
-            ;;
-        13) domain ;;
-        14) certv2ray ;;
-        15) passwd ;;
-        16) wss ;;
-        17) backup ;;
-        18) autoreboot ;;
-        19) speedtest ;;
-        20)
+        1) add-ssh ;;
+        2) trial-ssh ;;
+        3) renew-ssh ;;
+        4) del-expired ;;
+        5) add-xray ;;
+        6) del-xray ;;
+        7) renew-xray ;;
+        8) add-trojan ;;
+        9) del-trojan ;;
+        10) renew-trojan ;;
+        11) trial-ssh ;;
+        12) del-ssh ;;
+        13) check-ssh ;;
+        14) monitor-ssh ;;
+        15) trial-xray ;;
+        16) check-xray ;;
+        17) monitor-xray ;;
+        18) trial-trojan ;;
+        19) check-trojan ;;
+        20) monitor-trojan ;;
+        21) add-domain ;;
+        22) dns-setting ;;
+        23) auto-reboot ;;
+        24) ram-usage ;;
+        25) speedtest ;;
+        26) change-port ;;
+        27) autobackup ;;
+        28) backup ;;
+        29) restore ;;
+        30) webmin ;;
+        31) add-cf ;;
+        32) cf-addon ;;
+        33) point-domain ;;
+        34) timezone ;;
+        35) update ;;
+        36) bbr ;;
+        37) tcp-tweak ;;
+        38) restart-services ;;
+        39) system-info ;;
+        40)
             echo -e ""
             echo -e " ${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
             echo -e " ${YELLOW}              SCRIPT INFORMATION                 ${NC}"
             echo -e " ${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
             echo -e " ${GREEN}❇️ Developer   ${NC}: Your Name"
             echo -e " ${GREEN}❇️ Version     ${NC}: 1.0"
-            echo -e " ${GREEN}❇️ Client Name ${NC}: VPS Script"
+            echo -e " ${GREEN}❇️ Client Name ${NC}: Premium VPS"
             echo -e " ${GREEN}❇️ Expiry Date ${NC}: Lifetime"
             echo -e " ${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
             ;;
@@ -113,7 +132,7 @@ while true; do
             exit 0 
             ;;
         *) 
-            echo -e "${RED}Please enter a valid number [0-20]${NC}"
+            echo -e "${RED}Please enter a valid number [0-40]${NC}"
             sleep 2
             ;;
     esac
