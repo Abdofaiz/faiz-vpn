@@ -49,6 +49,16 @@ wget -O ram https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/ram
 wget -O version https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/version
 wget -O domain https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/domain
 wget -O login https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/login
+wget -O add-ssh https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/add-ssh
+wget -O trial-ssh https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/trial-ssh
+wget -O renew-ssh https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/renew-ssh
+wget -O del-ssh https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/del-ssh
+wget -O cek-ssh https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/cek-ssh
+wget -O member-ssh https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/member-ssh
+wget -O del-expired https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/del-expired
+wget -O autokill-ssh https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/autokill-ssh
+wget -O port-ssh https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/port-ssh
+wget -O limit-ssh https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/limit-ssh
 
 # Create main menu script
 cat > /root/faiz-vpn/menu/menu <<EOF
@@ -58,60 +68,194 @@ echo -e "${BLUE}=============================${NC}"
 echo -e "${YELLOW}         MAIN MENU          ${NC}"
 echo -e "${BLUE}=============================${NC}"
 echo -e ""
-echo -e "${GREEN}VMESS MENU${NC}"
-echo -e " 1) Add Vmess"
-echo -e " 2) Delete Vmess"
-echo -e " 3) Renew Vmess"
-echo -e " 4) Check Vmess Login"
-echo -e " 5) Trial Vmess"
+echo -e "${GREEN}XRAY MENU${NC}"
+echo -e " 1) Vmess Menu"
+echo -e " 2) Vless Menu"
+echo -e " 3) Trojan Menu"
 echo -e ""
-echo -e "${GREEN}VLESS MENU${NC}"
-echo -e " 6) Add Vless"
-echo -e " 7) Delete Vless"
-echo -e " 8) Renew Vless"
-echo -e " 9) Check Vless Login"
-echo -e "10) Trial Vless"
-echo -e ""
-echo -e "${GREEN}TROJAN MENU${NC}"
-echo -e "11) Add Trojan"
-echo -e "12) Delete Trojan"
-echo -e "13) Renew Trojan"
-echo -e "14) Check Trojan Login"
-echo -e "15) Trial Trojan"
+echo -e "${GREEN}SSH MENU${NC}"
+echo -e " 4) SSH Menu"
 echo -e ""
 echo -e "${GREEN}SYSTEM MENU${NC}"
-echo -e "16) Check Running Services"
-echo -e "17) Check RAM Usage"
-echo -e "18) Check Version"
-echo -e "19) Check Domain"
-echo -e "20) Check Login Sessions"
+echo -e " 5) Running Services"
+echo -e " 6) RAM Usage"
+echo -e " 7) System Version"
+echo -e " 8) Domain Settings"
+echo -e " 9) Login Monitor"
+echo -e ""
+echo -e "${GREEN}MANAGEMENT MENU${NC}"
+echo -e "10) Change Port"
+echo -e "11) Backup Data"
+echo -e "12) Restore Data"
+echo -e "13) Webmin Panel"
+echo -e "14) Speedtest"
+echo -e "15) Auto Reboot"
+echo -e ""
+echo -e "${GREEN}ADDITIONAL MENU${NC}"
+echo -e "16) Update Script"
+echo -e "17) Install BBR"
+echo -e "18) Clear Log"
+echo -e "19) Clear Cache"
+echo -e "20) Auto Kill Multi Login"
 echo -e " 0) Exit"
 echo -e ""
 echo -e "${BLUE}=============================${NC}"
 read -p "Select menu : " menu_num
 
 case \$menu_num in
-    1) add-vmess ;;
-    2) del-vmess ;;
-    3) renew-vmess ;;
-    4) cek-vmess ;;
-    5) trial-vmess ;;
-    6) add-vless ;;
-    7) del-vless ;;
-    8) renew-vless ;;
-    9) cek-vless ;;
-    10) trial-vless ;;
-    11) add-trojan ;;
-    12) del-trojan ;;
-    13) renew-trojan ;;
-    14) cek-trojan ;;
-    15) trial-trojan ;;
-    16) running ;;
-    17) ram ;;
-    18) version ;;
-    19) domain ;;
-    20) login ;;
+    1) vmess-menu ;;
+    2) vless-menu ;;
+    3) trojan-menu ;;
+    4) ssh-menu ;;
+    5) running ;;
+    6) ram ;;
+    7) version ;;
+    8) domain ;;
+    9) login ;;
+    10) port-menu ;;
+    11) backup ;;
+    12) restore ;;
+    13) webmin ;;
+    14) speedtest ;;
+    15) auto-reboot ;;
+    16) update ;;
+    17) bbr ;;
+    18) clear-log ;;
+    19) clear-cache ;;
+    20) auto-kill ;;
     0) exit 0 ;;
+    *) echo -e "${RED}Invalid option${NC}" ;;
+esac
+EOF
+
+# Create VMESS menu
+cat > /root/faiz-vpn/menu/vmess-menu <<EOF
+#!/bin/bash
+clear
+echo -e "${BLUE}=============================${NC}"
+echo -e "${YELLOW}         VMESS MENU         ${NC}"
+echo -e "${BLUE}=============================${NC}"
+echo -e ""
+echo -e " 1) Create Account"
+echo -e " 2) Trial Account"
+echo -e " 3) Extend Account"
+echo -e " 4) Delete Account"
+echo -e " 5) Check User Login"
+echo -e " 6) Check Config"
+echo -e " 0) Back to Main Menu"
+echo -e ""
+echo -e "${BLUE}=============================${NC}"
+read -p "Select menu : " num
+
+case \$num in
+    1) add-vmess ;;
+    2) trial-vmess ;;
+    3) renew-vmess ;;
+    4) del-vmess ;;
+    5) cek-vmess ;;
+    6) config-vmess ;;
+    0) menu ;;
+    *) echo -e "${RED}Invalid option${NC}" ;;
+esac
+EOF
+
+# Create VLESS menu
+cat > /root/faiz-vpn/menu/vless-menu <<EOF
+#!/bin/bash
+clear
+echo -e "${BLUE}=============================${NC}"
+echo -e "${YELLOW}         VLESS MENU         ${NC}"
+echo -e "${BLUE}=============================${NC}"
+echo -e ""
+echo -e " 1) Create Account"
+echo -e " 2) Trial Account"
+echo -e " 3) Extend Account"
+echo -e " 4) Delete Account"
+echo -e " 5) Check User Login"
+echo -e " 6) Check Config"
+echo -e " 0) Back to Main Menu"
+echo -e ""
+echo -e "${BLUE}=============================${NC}"
+read -p "Select menu : " num
+
+case \$num in
+    1) add-vless ;;
+    2) trial-vless ;;
+    3) renew-vless ;;
+    4) del-vless ;;
+    5) cek-vless ;;
+    6) config-vless ;;
+    0) menu ;;
+    *) echo -e "${RED}Invalid option${NC}" ;;
+esac
+EOF
+
+# Create TROJAN menu
+cat > /root/faiz-vpn/menu/trojan-menu <<EOF
+#!/bin/bash
+clear
+echo -e "${BLUE}=============================${NC}"
+echo -e "${YELLOW}        TROJAN MENU         ${NC}"
+echo -e "${BLUE}=============================${NC}"
+echo -e ""
+echo -e " 1) Create Account"
+echo -e " 2) Trial Account"
+echo -e " 3) Extend Account"
+echo -e " 4) Delete Account"
+echo -e " 5) Check User Login"
+echo -e " 6) Check Config"
+echo -e " 0) Back to Main Menu"
+echo -e ""
+echo -e "${BLUE}=============================${NC}"
+read -p "Select menu : " num
+
+case \$num in
+    1) add-trojan ;;
+    2) trial-trojan ;;
+    3) renew-trojan ;;
+    4) del-trojan ;;
+    5) cek-trojan ;;
+    6) config-trojan ;;
+    0) menu ;;
+    *) echo -e "${RED}Invalid option${NC}" ;;
+esac
+EOF
+
+# Create SSH menu
+cat > /root/faiz-vpn/menu/ssh-menu <<EOF
+#!/bin/bash
+clear
+echo -e "${BLUE}=============================${NC}"
+echo -e "${YELLOW}         SSH MENU           ${NC}"
+echo -e "${BLUE}=============================${NC}"
+echo -e ""
+echo -e " 1) Create SSH Account"
+echo -e " 2) Trial SSH Account"
+echo -e " 3) Extend SSH Account"
+echo -e " 4) Delete SSH Account"
+echo -e " 5) Check SSH User Login"
+echo -e " 6) List SSH Members"
+echo -e " 7) Delete Expired Users"
+echo -e " 8) Set Auto Kill"
+echo -e " 9) Check SSH Port"
+echo -e "10) Set Multi Login Limit"
+echo -e " 0) Back to Main Menu"
+echo -e ""
+echo -e "${BLUE}=============================${NC}"
+read -p "Select menu : " num
+
+case \$num in
+    1) add-ssh ;;
+    2) trial-ssh ;;
+    3) renew-ssh ;;
+    4) del-ssh ;;
+    5) cek-ssh ;;
+    6) member-ssh ;;
+    7) del-expired ;;
+    8) autokill-ssh ;;
+    9) port-ssh ;;
+    10) limit-ssh ;;
+    0) menu ;;
     *) echo -e "${RED}Invalid option${NC}" ;;
 esac
 EOF
