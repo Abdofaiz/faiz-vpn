@@ -49,16 +49,16 @@ wget -O ram https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/ram
 wget -O version https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/version
 wget -O domain https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/domain
 wget -O login https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/login
+
+# Download SSH menu scripts
+echo -e "Downloading SSH menu scripts..."
+cd /root/faiz-vpn/menu
 wget -O add-ssh https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/add-ssh
-wget -O trial-ssh https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/trial-ssh
-wget -O renew-ssh https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/renew-ssh
 wget -O del-ssh https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/del-ssh
+wget -O renew-ssh https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/renew-ssh
 wget -O cek-ssh https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/cek-ssh
+wget -O trial-ssh https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/trial-ssh
 wget -O member-ssh https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/member-ssh
-wget -O del-expired https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/del-expired
-wget -O autokill-ssh https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/autokill-ssh
-wget -O port-ssh https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/port-ssh
-wget -O limit-ssh https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/limit-ssh
 
 # Create main menu script
 cat > /root/faiz-vpn/menu/menu <<EOF
@@ -74,39 +74,39 @@ echo -e " 2) Vless Menu"
 echo -e " 3) Trojan Menu"
 echo -e ""
 echo -e "${GREEN}SSH MENU${NC}"
-echo -e " 4) SSH Menu"
+echo -e " 1) SSH Menu"
 echo -e ""
 echo -e "${GREEN}SYSTEM MENU${NC}"
-echo -e " 5) Running Services"
-echo -e " 6) RAM Usage"
-echo -e " 7) System Version"
-echo -e " 8) Domain Settings"
-echo -e " 9) Login Monitor"
+echo -e " 4) Running Services"
+echo -e " 5) RAM Usage"
+echo -e " 6) System Version"
+echo -e " 7) Domain Settings"
+echo -e " 8) Login Monitor"
 echo -e ""
 echo -e "${GREEN}MANAGEMENT MENU${NC}"
-echo -e "10) Change Port"
-echo -e "11) Backup Data"
-echo -e "12) Restore Data"
-echo -e "13) Webmin Panel"
-echo -e "14) Speedtest"
-echo -e "15) Auto Reboot"
+echo -e " 9) Change Port"
+echo -e "10) Backup Data"
+echo -e "11) Restore Data"
+echo -e "12) Webmin Panel"
+echo -e "13) Speedtest"
+echo -e "14) Auto Reboot"
 echo -e ""
 echo -e "${GREEN}ADDITIONAL MENU${NC}"
-echo -e "16) Update Script"
-echo -e "17) Install BBR"
-echo -e "18) Clear Log"
-echo -e "19) Clear Cache"
-echo -e "20) Auto Kill Multi Login"
+echo -e "15) Update Script"
+echo -e "16) Install BBR"
+echo -e "17) Clear Log"
+echo -e "18) Clear Cache"
+echo -e "19) Auto Kill Multi Login"
 echo -e " 0) Exit"
 echo -e ""
 echo -e "${BLUE}=============================${NC}"
 read -p "Select menu : " menu_num
 
 case \$menu_num in
-    1) vmess-menu ;;
-    2) vless-menu ;;
-    3) trojan-menu ;;
-    4) ssh-menu ;;
+    1) ssh-menu ;;
+    2) vmess-menu ;;
+    3) vless-menu ;;
+    4) trojan-menu ;;
     5) running ;;
     6) ram ;;
     7) version ;;
@@ -229,16 +229,12 @@ echo -e "${BLUE}=============================${NC}"
 echo -e "${YELLOW}         SSH MENU           ${NC}"
 echo -e "${BLUE}=============================${NC}"
 echo -e ""
-echo -e " 1) Create SSH Account"
-echo -e " 2) Trial SSH Account"
-echo -e " 3) Extend SSH Account"
-echo -e " 4) Delete SSH Account"
-echo -e " 5) Check SSH User Login"
-echo -e " 6) List SSH Members"
-echo -e " 7) Delete Expired Users"
-echo -e " 8) Set Auto Kill"
-echo -e " 9) Check SSH Port"
-echo -e "10) Set Multi Login Limit"
+echo -e " 1) Create Account"
+echo -e " 2) Trial Account"
+echo -e " 3) Extend Account"
+echo -e " 4) Delete Account"
+echo -e " 5) Check User Login"
+echo -e " 6) Member List"
 echo -e " 0) Back to Main Menu"
 echo -e ""
 echo -e "${BLUE}=============================${NC}"
@@ -251,10 +247,6 @@ case \$num in
     4) del-ssh ;;
     5) cek-ssh ;;
     6) member-ssh ;;
-    7) del-expired ;;
-    8) autokill-ssh ;;
-    9) port-ssh ;;
-    10) limit-ssh ;;
     0) menu ;;
     *) echo -e "${RED}Invalid option${NC}" ;;
 esac
