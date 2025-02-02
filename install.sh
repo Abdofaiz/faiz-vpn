@@ -50,6 +50,54 @@ wget -O version https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/ve
 wget -O domain https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/domain
 wget -O login https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/login
 
+# Create main menu script
+cat > /root/faiz-vpn/menu/menu <<EOF
+#!/bin/bash
+# Main Menu Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+clear
+echo -e "${BLUE}=============================${NC}"
+echo -e "${YELLOW}     VPS MANAGER MENU     ${NC}"
+echo -e "${BLUE}=============================${NC}"
+echo -e ""
+echo -e "${GREEN}1${NC}. User Management"
+echo -e "${GREEN}2${NC}. Certificate Management"
+echo -e "${GREEN}3${NC}. Bandwidth Monitor"
+echo -e "${GREEN}4${NC}. Log Viewer"
+echo -e "${GREEN}5${NC}. Limit Configuration"
+echo -e "${GREEN}6${NC}. Port Management"
+echo -e "${GREEN}7${NC}. Domain Settings"
+echo -e "${GREEN}8${NC}. WebSocket Settings"
+echo -e "${GREEN}9${NC}. XRAY Configuration"
+echo -e "${GREEN}10${NC}. SSH Settings"
+echo -e "${GREEN}0${NC}. Exit"
+echo -e ""
+echo -e "${BLUE}=============================${NC}"
+read -p "Select menu: " menu_option
+
+case \$menu_option in
+    1) /root/faiz-vpn/menu/user-menu ;;
+    2) /root/faiz-vpn/menu/cert-menu ;;
+    3) /root/faiz-vpn/menu/bandwidth ;;
+    4) /root/faiz-vpn/menu/log ;;
+    5) /root/faiz-vpn/menu/limit ;;
+    6) /root/faiz-vpn/menu/port ;;
+    7) /root/faiz-vpn/menu/domain ;;
+    8) /root/faiz-vpn/menu/ws ;;
+    9) /root/faiz-vpn/menu/xray ;;
+    10) /root/faiz-vpn/menu/ssh ;;
+    0) exit 0 ;;
+    *) echo -e "${RED}Invalid option${NC}" ;;
+esac
+EOF
+
 # Create dummy config files
 echo -e "Creating test config files..."
 echo "domain.com" > /etc/xray/domain
@@ -81,7 +129,13 @@ EOF
 echo -e "Setting permissions..."
 chmod +x /root/faiz-vpn/menu/*
 
+# Make menu script executable
+chmod +x /root/faiz-vpn/menu/menu
+
+# Create symlink to menu
+ln -sf /root/faiz-vpn/menu/menu /usr/local/bin/menu
+
 echo -e ""
 echo -e "${GREEN}Test installation completed!${NC}"
-echo -e "You can now test the menu scripts"
+echo -e "Use ${YELLOW}menu${NC} command to access the management menu"
 echo -e "${BLUE}=============================${NC}"
