@@ -30,9 +30,11 @@ apt install -y nginx python3 python3-pip stunnel4 dropbear fail2ban
 
 # Download script files
 echo -e "\n${BLUE}[3/7]${NC} Downloading script files..."
-wget -O /tmp/faiz-vpn.zip https://github.com/Abdofaiz/faiz-vpn/archive/main.zip
-unzip -o /tmp/faiz-vpn.zip -d /tmp/
-rm -f /tmp/faiz-vpn.zip
+cd /root
+rm -rf /root/faiz-vpn-main
+wget -O faiz-vpn.zip https://github.com/Abdofaiz/faiz-vpn/archive/refs/heads/main.zip
+unzip -o faiz-vpn.zip
+rm -f faiz-vpn.zip
 
 # Install XRAY
 echo -e "\n${BLUE}[4/7]${NC} Installing XRAY..."
@@ -45,18 +47,26 @@ mkdir -p /etc/nginx/conf.d
 mkdir -p /root/autoscript
 
 # Copy configuration files
-cp -rf /tmp/faiz-vpn-main/* /root/autoscript/
-cp /root/autoscript/xray/config.json /usr/local/etc/xray/
-cp /root/autoscript/nginx/xray.conf /etc/nginx/conf.d/
+cd /root/faiz-vpn-main
+cp -r * /root/autoscript/
+cp -f xray/config.json /usr/local/etc/xray/
+cp -f nginx/xray.conf /etc/nginx/conf.d/
 
 # Install menu scripts
 echo -e "\n${BLUE}[6/7]${NC} Installing menu scripts..."
-cp /root/autoscript/menu/* /usr/local/bin/
-chmod +x /usr/local/bin/menu*
+chmod +x /root/autoscript/menu/*
+cp -f /root/autoscript/menu/* /usr/local/bin/
+
+# Configure services
+echo -e "\n${BLUE}[7/7]${NC} Configuring services..."
+systemctl daemon-reload
+systemctl enable nginx
+systemctl enable xray
+systemctl enable stunnel4
+systemctl enable dropbear
+systemctl enable fail2ban
 
 # Start services
-echo -e "\n${BLUE}[7/7]${NC} Starting services..."
-systemctl daemon-reload
 systemctl restart nginx
 systemctl restart xray
 systemctl restart stunnel4
