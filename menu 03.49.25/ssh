@@ -1,0 +1,111 @@
+#!/bin/bash
+# SSH Manager Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+show_menu() {
+    clear
+    echo -e "${BLUE}=============================${NC}"
+    echo -e "${YELLOW}     SSH MANAGER     ${NC}"
+    echo -e "${BLUE}=============================${NC}"
+    echo -e ""
+    echo -e "${GREEN}1${NC}. Create Account"
+    echo -e "${GREEN}2${NC}. Delete Account"
+    echo -e "${GREEN}3${NC}. Extend Account"
+    echo -e "${GREEN}4${NC}. List Accounts"
+    echo -e "${GREEN}5${NC}. Monitor Users"
+    echo -e "${GREEN}6${NC}. Lock/Unlock User"
+    echo -e "${GREEN}0${NC}. Back to Main Menu"
+    echo -e ""
+    echo -e "${BLUE}=============================${NC}"
+}
+
+create_account() {
+    read -p "Username: " user
+    read -p "Password: " pass
+    read -p "Duration (days): " duration
+    exp=$(date -d "+$duration days" +"%Y-%m-%d")
+    
+    useradd -e "$exp" -s /bin/false -M $user
+    echo -e "$pass\n$pass" | passwd $user &> /dev/null
+    
+    echo -e "${GREEN}SSH Account created successfully${NC}"
+    echo -e "Username: $user"
+    echo -e "Password: $pass"
+    echo -e "Expires: $exp"
+}
+
+delete_account() {
+    read -p "Username to delete: " user
+    userdel -f $user
+    echo -e "${GREEN}Account deleted successfully${NC}"
+}
+
+extend_account() {
+    read -p "Username to extend: " user
+    read -p "Duration (days): " duration
+    exp=$(date -d "+$duration days" +"%Y-%m-%d")
+    chage -E "$exp" $user
+    echo -e "${GREEN}Account extended successfully${NC}"
+}
+
+list_accounts() {
+    echo -e "${YELLOW}SSH Accounts:${NC}"
+    echo -e "------------------------"
+    echo -e "Username | Expiry Date | Status"
+    for user in $(awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd); do
+        exp=$(chage -l $user | grep "Account expires" | cut -d: -f2)
+        status=$(passwd -S $user | awk '{print $2}')
+        echo -e "$user | $exp | $status"
+    done
+}
+
+monitor_users() {
+    echo -e "${YELLOW}Online Users:${NC}"
+    echo -e "------------------------"
+    echo -e "Username | IP | Login Time"
+    who | awk '{print $1 " | " $5 " | " $3 " " $4}'
+    echo -e "\nConnection History:"
+    last | head -n 10
+}
+
+lock_user() {
+    echo -e "${YELLOW}Lock/Unlock User:${NC}"
+    echo -e "1. Lock User"
+    echo -e "2. Unlock User"
+    read -p "Select option: " choice
+    read -p "Enter username: " user
+    
+    case $choice in
+        1)
+            passwd -l $user
+            echo -e "${GREEN}User $user locked${NC}"
+            ;;
+        2)
+            passwd -u $user
+            echo -e "${GREEN}User $user unlocked${NC}"
+            ;;
+        *) echo -e "${RED}Invalid option${NC}" ;;
+    esac
+}
+
+while true; do
+    show_menu
+    read -p "Select option: " choice
+    case $choice in
+        1) create_account ;;
+        2) delete_account ;;
+        3) extend_account ;;
+        4) list_accounts ;;
+        5) monitor_users ;;
+        6) lock_user ;;
+        0) break ;;
+        *) echo -e "${RED}Invalid option${NC}" ;;
+    esac
+    read -n 1 -s -r -p "Press any key to continue"
+done 

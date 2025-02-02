@@ -1,0 +1,128 @@
+#!/bin/bash
+# Limit Manager Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+show_menu() {
+    clear
+    echo -e "${BLUE}=============================${NC}"
+    echo -e "${YELLOW}     LIMIT MANAGER     ${NC}"
+    echo -e "${BLUE}=============================${NC}"
+    echo -e ""
+    echo -e "${GREEN}1${NC}. Set Max Login"
+    echo -e "${GREEN}2${NC}. Set Max Bandwidth"
+    echo -e "${GREEN}3${NC}. Set Max CPU Usage"
+    echo -e "${GREEN}4${NC}. Set Max Memory"
+    echo -e "${GREEN}5${NC}. Show Current Limits"
+    echo -e "${GREEN}6${NC}. Reset All Limits"
+    echo -e "${GREEN}0${NC}. Back to Main Menu"
+    echo -e ""
+    echo -e "${BLUE}=============================${NC}"
+}
+
+set_max_login() {
+    read -p "Enter username: " user
+    read -p "Enter max login limit: " limit
+    echo "$limit" > /etc/limit/user/$user
+    echo -e "${GREEN}Max login limit set for $user: $limit${NC}"
+}
+
+set_bandwidth() {
+    read -p "Enter username: " user
+    read -p "Enter bandwidth limit (in MB): " limit
+    echo "$limit" > /etc/limit/bandwidth/$user
+    wondershaper -a eth0 -d $((limit*1024)) -u $((limit*1024))
+    echo -e "${GREEN}Bandwidth limit set for $user: $limit MB${NC}"
+}
+
+set_cpu() {
+    read -p "Enter username: " user
+    read -p "Enter CPU limit (%): " limit
+    echo "$limit" > /etc/limit/cpu/$user
+    cpulimit -l $limit -u $user
+    echo -e "${GREEN}CPU limit set for $user: $limit%${NC}"
+}
+
+set_memory() {
+    read -p "Enter username: " user
+    read -p "Enter memory limit (MB): " limit
+    echo "$limit" > /etc/limit/memory/$user
+    systemctl set-property user-$user.slice MemoryLimit=$((limit*1024*1024))
+    echo -e "${GREEN}Memory limit set for $user: $limit MB${NC}"
+}
+
+show_limits() {
+    echo -e "${YELLOW}Current Limits:${NC}"
+    echo -e "------------------------"
+    echo -e "\nLogin Limits:"
+    for user in /etc/limit/user/*; do
+        if [ -f "$user" ]; then
+            username=$(basename "$user")
+            limit=$(cat "$user")
+            echo -e "$username: $limit logins"
+        fi
+    done
+    
+    echo -e "\nBandwidth Limits:"
+    for user in /etc/limit/bandwidth/*; do
+        if [ -f "$user" ]; then
+            username=$(basename "$user")
+            limit=$(cat "$user")
+            echo -e "$username: $limit MB"
+        fi
+    done
+    
+    echo -e "\nCPU Limits:"
+    for user in /etc/limit/cpu/*; do
+        if [ -f "$user" ]; then
+            username=$(basename "$user")
+            limit=$(cat "$user")
+            echo -e "$username: $limit%"
+        fi
+    done
+    
+    echo -e "\nMemory Limits:"
+    for user in /etc/limit/memory/*; do
+        if [ -f "$user" ]; then
+            username=$(basename "$user")
+            limit=$(cat "$user")
+            echo -e "$username: $limit MB"
+        fi
+    done
+}
+
+reset_limits() {
+    read -p "Are you sure you want to reset all limits? (y/n): " confirm
+    if [[ $confirm =~ ^[Yy]$ ]]; then
+        rm -rf /etc/limit/user/*
+        rm -rf /etc/limit/bandwidth/*
+        rm -rf /etc/limit/cpu/*
+        rm -rf /etc/limit/memory/*
+        wondershaper -c -a eth0
+        echo -e "${GREEN}All limits have been reset${NC}"
+    fi
+}
+
+# Create limit directories if they don't exist
+mkdir -p /etc/limit/{user,bandwidth,cpu,memory}
+
+while true; do
+    show_menu
+    read -p "Select option: " choice
+    case $choice in
+        1) set_max_login ;;
+        2) set_bandwidth ;;
+        3) set_cpu ;;
+        4) set_memory ;;
+        5) show_limits ;;
+        6) reset_limits ;;
+        0) break ;;
+        *) echo -e "${RED}Invalid option${NC}" ;;
+    esac
+    read -n 1 -s -r -p "Press any key to continue"
+done 

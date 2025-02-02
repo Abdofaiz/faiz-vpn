@@ -1,0 +1,101 @@
+#!/bin/bash
+# Update Manager Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+show_menu() {
+    clear
+    echo -e "${BLUE}=============================${NC}"
+    echo -e "${YELLOW}     UPDATE MANAGER     ${NC}"
+    echo -e "${BLUE}=============================${NC}"
+    echo -e ""
+    echo -e "${GREEN}1${NC}. Update Script"
+    echo -e "${GREEN}2${NC}. Update System"
+    echo -e "${GREEN}3${NC}. Update Services"
+    echo -e "${GREEN}4${NC}. Check Version"
+    echo -e "${GREEN}5${NC}. Change Log"
+    echo -e "${GREEN}6${NC}. Backup Config"
+    echo -e "${GREEN}0${NC}. Back to Main Menu"
+    echo -e ""
+    echo -e "${BLUE}=============================${NC}"
+}
+
+update_script() {
+    echo -e "${YELLOW}Updating script...${NC}"
+    wget -q -O /tmp/update.zip "https://github.com/yourusername/autoscript/archive/main.zip"
+    unzip -o /tmp/update.zip -d /tmp/
+    cp -rf /tmp/autoscript-main/* /root/autoscript/
+    rm -rf /tmp/update.zip /tmp/autoscript-main
+    chmod +x /root/autoscript/menu/*
+    echo -e "${GREEN}Script updated successfully${NC}"
+}
+
+update_system() {
+    echo -e "${YELLOW}Updating system packages...${NC}"
+    apt update
+    apt upgrade -y
+    apt autoremove -y
+    echo -e "${GREEN}System updated successfully${NC}"
+}
+
+update_services() {
+    echo -e "${YELLOW}Updating services...${NC}"
+    systemctl daemon-reload
+    systemctl restart nginx
+    systemctl restart xray
+    systemctl restart ws-service
+    echo -e "${GREEN}Services updated successfully${NC}"
+}
+
+check_version() {
+    echo -e "${YELLOW}Current Version:${NC}"
+    echo -e "------------------------"
+    echo -e "Script Version: $(cat /root/autoscript/version)"
+    echo -e "System Version: $(cat /etc/os-release | grep VERSION= | cut -d'"' -f2)"
+    echo -e "XRAY Version: $(xray -version | head -n1)"
+    echo -e "Nginx Version: $(nginx -v 2>&1 | cut -d'/' -f2)"
+}
+
+show_changelog() {
+    echo -e "${YELLOW}Change Log:${NC}"
+    echo -e "------------------------"
+    if [ -f "/root/autoscript/changelog.txt" ]; then
+        cat /root/autoscript/changelog.txt
+    else
+        echo -e "${RED}Change log not found${NC}"
+    fi
+}
+
+backup_config() {
+    echo -e "${YELLOW}Backing up configuration...${NC}"
+    DATE=$(date +%Y-%m-%d-%H%M%S)
+    mkdir -p /root/backup-config
+    tar -czf /root/backup-config/config-$DATE.tar.gz \
+        /etc/xray \
+        /usr/local/etc/xray \
+        /etc/nginx/conf.d \
+        /root/autoscript/config \
+        2>/dev/null
+    echo -e "${GREEN}Configuration backed up to /root/backup-config/config-$DATE.tar.gz${NC}"
+}
+
+while true; do
+    show_menu
+    read -p "Select option: " choice
+    case $choice in
+        1) update_script ;;
+        2) update_system ;;
+        3) update_services ;;
+        4) check_version ;;
+        5) show_changelog ;;
+        6) backup_config ;;
+        0) break ;;
+        *) echo -e "${RED}Invalid option${NC}" ;;
+    esac
+    read -n 1 -s -r -p "Press any key to continue"
+done 

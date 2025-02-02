@@ -1,0 +1,149 @@
+#!/bin/bash
+# Backup Manager Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+show_menu() {
+    clear
+    echo -e "${BLUE}=============================${NC}"
+    echo -e "${YELLOW}     BACKUP MANAGER     ${NC}"
+    echo -e "${BLUE}=============================${NC}"
+    echo -e ""
+    echo -e "${GREEN}1${NC}. Create Backup"
+    echo -e "${GREEN}2${NC}. Restore Backup"
+    echo -e "${GREEN}3${NC}. Schedule Backup"
+    echo -e "${GREEN}4${NC}. List Backups"
+    echo -e "${GREEN}5${NC}. Delete Backup"
+    echo -e "${GREEN}6${NC}. Auto Backup Settings"
+    echo -e "${GREEN}0${NC}. Back to Main Menu"
+    echo -e ""
+    echo -e "${BLUE}=============================${NC}"
+}
+
+create_backup() {
+    echo -e "${YELLOW}Creating backup...${NC}"
+    DATE=$(date +%Y-%m-%d-%H%M%S)
+    BACKUP_DIR="/root/backup"
+    mkdir -p $BACKUP_DIR
+    
+    tar -czf $BACKUP_DIR/backup-$DATE.tar.gz \
+        /etc/xray \
+        /usr/local/etc/xray \
+        /etc/nginx/conf.d \
+        /etc/systemd/system/xray.service \
+        /etc/systemd/system/ws-service.service \
+        /root/autoscript \
+        2>/dev/null
+        
+    echo -e "${GREEN}Backup created: backup-$DATE.tar.gz${NC}"
+}
+
+restore_backup() {
+    echo -e "${YELLOW}Available backups:${NC}"
+    ls -1 /root/backup/*.tar.gz 2>/dev/null || echo "No backups found"
+    echo ""
+    read -p "Enter backup file name to restore: " file
+    
+    if [ -f "/root/backup/$file" ]; then
+        echo -e "${YELLOW}Restoring backup...${NC}"
+        systemctl stop xray nginx ws-service
+        tar -xzf /root/backup/$file -C /
+        systemctl restart xray nginx ws-service
+        echo -e "${GREEN}Backup restored successfully${NC}"
+    else
+        echo -e "${RED}Backup file not found${NC}"
+    fi
+}
+
+schedule_backup() {
+    echo -e "${YELLOW}Schedule Backup:${NC}"
+    echo -e "1. Daily"
+    echo -e "2. Weekly"
+    echo -e "3. Monthly"
+    echo -e "4. Custom"
+    read -p "Select schedule type: " schedule
+    
+    case $schedule in
+        1) cron="0 0 * * *" ;;
+        2) cron="0 0 * * 0" ;;
+        3) cron="0 0 1 * *" ;;
+        4) 
+            read -p "Enter cron schedule (e.g., 0 0 * * *): " cron
+            ;;
+        *) echo -e "${RED}Invalid option${NC}" ; return ;;
+    esac
+    
+    (crontab -l 2>/dev/null | grep -v "/usr/local/bin/backup-manager"; echo "$cron /usr/local/bin/backup-manager create") | crontab -
+    echo -e "${GREEN}Backup schedule set${NC}"
+}
+
+list_backups() {
+    echo -e "${YELLOW}Available backups:${NC}"
+    echo -e "------------------------"
+    ls -lh /root/backup/*.tar.gz 2>/dev/null | awk '{print $9 " (" $5 ")"}' || echo "No backups found"
+}
+
+delete_backup() {
+    echo -e "${YELLOW}Available backups:${NC}"
+    ls -1 /root/backup/*.tar.gz 2>/dev/null || echo "No backups found"
+    echo ""
+    read -p "Enter backup file name to delete: " file
+    
+    if [ -f "/root/backup/$file" ]; then
+        rm -f /root/backup/$file
+        echo -e "${GREEN}Backup deleted successfully${NC}"
+    else
+        echo -e "${RED}Backup file not found${NC}"
+    fi
+}
+
+auto_backup() {
+    echo -e "${YELLOW}Auto Backup Settings:${NC}"
+    echo -e "1. Enable auto backup"
+    echo -e "2. Disable auto backup"
+    echo -e "3. Change backup retention"
+    echo -e "4. Show current settings"
+    read -p "Select option: " option
+    
+    case $option in
+        1)
+            schedule_backup
+            ;;
+        2)
+            crontab -l 2>/dev/null | grep -v "/usr/local/bin/backup-manager" | crontab -
+            echo -e "${GREEN}Auto backup disabled${NC}"
+            ;;
+        3)
+            read -p "Keep backups for how many days? " days
+            echo "$days" > /etc/backup-manager/retention
+            echo -e "${GREEN}Backup retention set to $days days${NC}"
+            ;;
+        4)
+            echo -e "Current schedule:"
+            crontab -l | grep backup-manager || echo "No schedule set"
+            echo -e "\nRetention period:"
+            cat /etc/backup-manager/retention 2>/dev/null || echo "Not set"
+            ;;
+    esac
+}
+
+while true; do
+    show_menu
+    read -p "Select option: " choice
+    case $choice in
+        1) create_backup ;;
+        2) restore_backup ;;
+        3) schedule_backup ;;
+        4) list_backups ;;
+        5) delete_backup ;;
+        6) auto_backup ;;
+        0) break ;;
+        *) echo -e "${RED}Invalid option${NC}" ;;
+    esac
+    read -n 1 -s -r -p "Press any key to continue"
+done 

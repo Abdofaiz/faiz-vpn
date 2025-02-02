@@ -1,0 +1,131 @@
+#!/bin/bash
+# Speedtest Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+show_menu() {
+    clear
+    echo -e "${BLUE}=============================${NC}"
+    echo -e "${YELLOW}     SPEEDTEST MENU     ${NC}"
+    echo -e "${BLUE}=============================${NC}"
+    echo -e ""
+    echo -e "${GREEN}1${NC}. Run Speedtest"
+    echo -e "${GREEN}2${NC}. View History"
+    echo -e "${GREEN}3${NC}. Schedule Test"
+    echo -e "${GREEN}4${NC}. Export Results"
+    echo -e "${GREEN}5${NC}. Server List"
+    echo -e "${GREEN}6${NC}. Settings"
+    echo -e "${GREEN}0${NC}. Back to Main Menu"
+    echo -e ""
+    echo -e "${BLUE}=============================${NC}"
+}
+
+run_speedtest() {
+    echo -e "${YELLOW}Running speedtest...${NC}"
+    speedtest-cli --share > /tmp/speedtest
+    result=$(cat /tmp/speedtest)
+    echo -e "\n${GREEN}Results:${NC}"
+    echo -e "$result"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $result" >> /root/speedtest-history.log
+}
+
+view_history() {
+    echo -e "${YELLOW}Speedtest History:${NC}"
+    echo -e "------------------------"
+    if [ -f "/root/speedtest-history.log" ]; then
+        cat /root/speedtest-history.log
+    else
+        echo -e "${RED}No history found${NC}"
+    fi
+}
+
+schedule_test() {
+    echo -e "${YELLOW}Schedule Speedtest:${NC}"
+    echo -e "1. Daily"
+    echo -e "2. Weekly"
+    echo -e "3. Monthly"
+    echo -e "4. Custom"
+    read -p "Select schedule type: " schedule
+    
+    case $schedule in
+        1) cron="0 0 * * *" ;;
+        2) cron="0 0 * * 0" ;;
+        3) cron="0 0 1 * *" ;;
+        4) 
+            read -p "Enter cron schedule: " cron
+            ;;
+        *) echo -e "${RED}Invalid option${NC}" ; return ;;
+    esac
+    
+    (crontab -l 2>/dev/null | grep -v speedtest-cli; echo "$cron speedtest-cli --share >> /root/speedtest-history.log") | crontab -
+    echo -e "${GREEN}Speedtest scheduled${NC}"
+}
+
+export_results() {
+    echo -e "${YELLOW}Export Results:${NC}"
+    if [ -f "/root/speedtest-history.log" ]; then
+        DATE=$(date +%Y-%m-%d-%H%M%S)
+        cp /root/speedtest-history.log /root/speedtest-$DATE.txt
+        echo -e "${GREEN}Results exported to /root/speedtest-$DATE.txt${NC}"
+    else
+        echo -e "${RED}No results to export${NC}"
+    fi
+}
+
+server_list() {
+    echo -e "${YELLOW}Available Speedtest Servers:${NC}"
+    speedtest-cli --list
+}
+
+settings() {
+    echo -e "${YELLOW}Speedtest Settings:${NC}"
+    echo -e "1. Change server"
+    echo -e "2. Toggle simple mode"
+    echo -e "3. Clear history"
+    read -p "Select option: " option
+    
+    case $option in
+        1)
+            read -p "Enter server ID: " server
+            echo "speedtest-cli --server $server" > /root/.speedtest
+            echo -e "${GREEN}Server changed${NC}"
+            ;;
+        2)
+            if grep -q "simple" /root/.speedtest 2>/dev/null; then
+                sed -i '/simple/d' /root/.speedtest
+                echo -e "${GREEN}Simple mode disabled${NC}"
+            else
+                echo "--simple" >> /root/.speedtest
+                echo -e "${GREEN}Simple mode enabled${NC}"
+            fi
+            ;;
+        3)
+            read -p "Are you sure? (y/n): " confirm
+            if [[ $confirm =~ ^[Yy]$ ]]; then
+                rm -f /root/speedtest-history.log
+                echo -e "${GREEN}History cleared${NC}"
+            fi
+            ;;
+    esac
+}
+
+while true; do
+    show_menu
+    read -p "Select option: " choice
+    case $choice in
+        1) run_speedtest ;;
+        2) view_history ;;
+        3) schedule_test ;;
+        4) export_results ;;
+        5) server_list ;;
+        6) settings ;;
+        0) break ;;
+        *) echo -e "${RED}Invalid option${NC}" ;;
+    esac
+    read -n 1 -s -r -p "Press any key to continue"
+done 

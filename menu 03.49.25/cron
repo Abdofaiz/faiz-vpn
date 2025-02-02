@@ -1,0 +1,91 @@
+#!/bin/bash
+# Cron Manager Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+show_menu() {
+    clear
+    echo -e "${BLUE}=============================${NC}"
+    echo -e "${YELLOW}     CRON MANAGER     ${NC}"
+    echo -e "${BLUE}=============================${NC}"
+    echo -e ""
+    echo -e "${GREEN}1${NC}. List Cron Jobs"
+    echo -e "${GREEN}2${NC}. Add Cron Job"
+    echo -e "${GREEN}3${NC}. Delete Cron Job"
+    echo -e "${GREEN}4${NC}. Enable Auto Backup"
+    echo -e "${GREEN}5${NC}. Enable Auto Reboot"
+    echo -e "${GREEN}6${NC}. Disable All Jobs"
+    echo -e "${GREEN}0${NC}. Back to Main Menu"
+    echo -e ""
+    echo -e "${BLUE}=============================${NC}"
+}
+
+list_cron() {
+    echo -e "${YELLOW}Current Cron Jobs:${NC}"
+    echo -e "------------------------"
+    crontab -l 2>/dev/null || echo "No cron jobs found"
+}
+
+add_cron() {
+    echo -e "${YELLOW}Add New Cron Job${NC}"
+    echo -e "Format: minute hour day month weekday command"
+    echo -e "Example: 0 0 * * * /usr/local/bin/backup"
+    read -p "Enter cron job: " cronjob
+    (crontab -l 2>/dev/null; echo "$cronjob") | crontab -
+    echo -e "${GREEN}Cron job added${NC}"
+}
+
+delete_cron() {
+    echo -e "${YELLOW}Current Cron Jobs:${NC}"
+    crontab -l 2>/dev/null | nl || echo "No cron jobs found"
+    read -p "Enter line number to delete: " line
+    if [ -n "$line" ]; then
+        crontab -l 2>/dev/null | sed "${line}d" | crontab -
+        echo -e "${GREEN}Cron job deleted${NC}"
+    fi
+}
+
+enable_backup() {
+    echo -e "${YELLOW}Auto Backup Settings:${NC}"
+    read -p "Enter hour (0-23): " hour
+    read -p "Enter minute (0-59): " minute
+    (crontab -l 2>/dev/null | grep -v "backup-manager"; echo "$minute $hour * * * /usr/local/bin/backup-manager create") | crontab -
+    echo -e "${GREEN}Auto backup enabled${NC}"
+}
+
+enable_reboot() {
+    echo -e "${YELLOW}Auto Reboot Settings:${NC}"
+    read -p "Enter hour (0-23): " hour
+    read -p "Enter minute (0-59): " minute
+    (crontab -l 2>/dev/null | grep -v "reboot"; echo "$minute $hour * * * /sbin/reboot") | crontab -
+    echo -e "${GREEN}Auto reboot enabled${NC}"
+}
+
+disable_all() {
+    read -p "Are you sure you want to disable all cron jobs? (y/n): " confirm
+    if [[ $confirm =~ ^[Yy]$ ]]; then
+        crontab -r
+        echo -e "${GREEN}All cron jobs disabled${NC}"
+    fi
+}
+
+while true; do
+    show_menu
+    read -p "Select option: " choice
+    case $choice in
+        1) list_cron ;;
+        2) add_cron ;;
+        3) delete_cron ;;
+        4) enable_backup ;;
+        5) enable_reboot ;;
+        6) disable_all ;;
+        0) break ;;
+        *) echo -e "${RED}Invalid option${NC}" ;;
+    esac
+    read -n 1 -s -r -p "Press any key to continue"
+done 

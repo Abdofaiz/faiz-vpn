@@ -1,0 +1,123 @@
+#!/bin/bash
+# XRAY Manager Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+show_menu() {
+    clear
+    echo -e "${BLUE}=============================${NC}"
+    echo -e "${YELLOW}     XRAY MANAGER     ${NC}"
+    echo -e "${BLUE}=============================${NC}"
+    echo -e ""
+    echo -e "${GREEN}1${NC}. Create Account"
+    echo -e "${GREEN}2${NC}. Delete Account"
+    echo -e "${GREEN}3${NC}. Extend Account"
+    echo -e "${GREEN}4${NC}. List Accounts"
+    echo -e "${GREEN}5${NC}. Monitor Users"
+    echo -e "${GREEN}6${NC}. Show Config"
+    echo -e "${GREEN}0${NC}. Back to Main Menu"
+    echo -e ""
+    echo -e "${BLUE}=============================${NC}"
+}
+
+create_account() {
+    read -p "Username: " user
+    read -p "Duration (days): " duration
+    uuid=$(xray uuid)
+    exp=$(date -d "+$duration days" +"%Y-%m-%d")
+    
+    domain=$(cat /etc/xray/domain)
+    
+    # Add to XRAY config
+    cat /usr/local/etc/xray/config.json | jq ".inbounds[0].settings.clients += [{
+        \"id\": \"$uuid\",
+        \"email\": \"$user\",
+        \"flow\": \"xtls-rprx-direct\",
+        \"expiryDate\": \"$exp\"
+    }]" > /tmp/config.json
+    mv /tmp/config.json /usr/local/etc/xray/config.json
+    
+    systemctl restart xray
+    
+    echo -e "${GREEN}Account created successfully${NC}"
+    echo -e "Username: $user"
+    echo -e "UUID: $uuid"
+    echo -e "Domain: $domain"
+    echo -e "Expires: $exp"
+}
+
+delete_account() {
+    read -p "Username to delete: " user
+    
+    # Remove from XRAY config
+    cat /usr/local/etc/xray/config.json | jq "del(.inbounds[0].settings.clients[] | select(.email == \"$user\"))" > /tmp/config.json
+    mv /tmp/config.json /usr/local/etc/xray/config.json
+    
+    systemctl restart xray
+    echo -e "${GREEN}Account deleted successfully${NC}"
+}
+
+extend_account() {
+    read -p "Username to extend: " user
+    read -p "Duration (days): " duration
+    exp=$(date -d "+$duration days" +"%Y-%m-%d")
+    
+    # Update expiry in XRAY config
+    cat /usr/local/etc/xray/config.json | jq "(.inbounds[0].settings.clients[] | select(.email == \"$user\")).expiryDate = \"$exp\"" > /tmp/config.json
+    mv /tmp/config.json /usr/local/etc/xray/config.json
+    
+    systemctl restart xray
+    echo -e "${GREEN}Account extended successfully${NC}"
+}
+
+list_accounts() {
+    echo -e "${YELLOW}XRAY Accounts:${NC}"
+    echo -e "------------------------"
+    echo -e "Username | UUID | Expiry Date"
+    cat /usr/local/etc/xray/config.json | jq -r '.inbounds[0].settings.clients[] | "\(.email) | \(.id) | \(.expiryDate)"'
+}
+
+monitor_users() {
+    echo -e "${YELLOW}Connected Users:${NC}"
+    echo -e "------------------------"
+    netstat -anp | grep ESTABLISHED | grep xray
+}
+
+show_config() {
+    read -p "Username: " user
+    domain=$(cat /etc/xray/domain)
+    uuid=$(cat /usr/local/etc/xray/config.json | jq -r ".inbounds[0].settings.clients[] | select(.email == \"$user\") | .id")
+    
+    if [ ! -z "$uuid" ]; then
+        echo -e "${YELLOW}XRAY Config for $user:${NC}"
+        echo -e "------------------------"
+        echo -e "Address: $domain"
+        echo -e "Port: 443"
+        echo -e "UUID: $uuid"
+        echo -e "Network: ws"
+        echo -e "Security: tls"
+    else
+        echo -e "${RED}User not found${NC}"
+    fi
+}
+
+while true; do
+    show_menu
+    read -p "Select option: " choice
+    case $choice in
+        1) create_account ;;
+        2) delete_account ;;
+        3) extend_account ;;
+        4) list_accounts ;;
+        5) monitor_users ;;
+        6) show_config ;;
+        0) break ;;
+        *) echo -e "${RED}Invalid option${NC}" ;;
+    esac
+    read -n 1 -s -r -p "Press any key to continue"
+done 
