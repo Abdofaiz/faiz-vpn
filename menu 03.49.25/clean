@@ -8,81 +8,75 @@ YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
+# Show menu
 show_menu() {
     clear
     echo -e "${BLUE}=============================${NC}"
-    echo -e "${YELLOW}     CLEANUP MANAGER     ${NC}"
+    echo -e "${YELLOW}     SYSTEM CLEANUP     ${NC}"
     echo -e "${BLUE}=============================${NC}"
     echo -e ""
-    echo -e "${GREEN}1${NC}. Clear System Cache"
-    echo -e "${GREEN}2${NC}. Clear Log Files"
-    echo -e "${GREEN}3${NC}. Clear Temp Files"
-    echo -e "${GREEN}4${NC}. Clear Mail Queue"
-    echo -e "${GREEN}5${NC}. Clear User Cache"
-    echo -e "${GREEN}6${NC}. Clear All"
+    echo -e "${GREEN}1${NC}. Clean System Cache"
+    echo -e "${GREEN}2${NC}. Clean Log Files"
+    echo -e "${GREEN}3${NC}. Clean Temp Files"
+    echo -e "${GREEN}4${NC}. Clean User Cache"
+    echo -e "${GREEN}5${NC}. Clean All"
     echo -e "${GREEN}0${NC}. Back to Main Menu"
     echo -e ""
     echo -e "${BLUE}=============================${NC}"
 }
 
-clear_cache() {
-    echo -e "${YELLOW}Clearing system cache...${NC}"
+# Clean system cache
+clean_cache() {
+    echo -e "${YELLOW}Cleaning system cache...${NC}"
     sync; echo 3 > /proc/sys/vm/drop_caches
     apt clean
     apt autoclean
-    echo -e "${GREEN}System cache cleared${NC}"
+    echo -e "${GREEN}System cache cleaned${NC}"
 }
 
-clear_logs() {
-    echo -e "${YELLOW}Clearing log files...${NC}"
+# Clean log files
+clean_logs() {
+    echo -e "${YELLOW}Cleaning log files...${NC}"
     find /var/log -type f -name "*.log" -exec truncate -s 0 {} \;
     find /var/log -type f -name "*.gz" -exec rm -f {} \;
-    echo -e "${GREEN}Log files cleared${NC}"
+    echo -e "${GREEN}Log files cleaned${NC}"
 }
 
-clear_temp() {
-    echo -e "${YELLOW}Clearing temp files...${NC}"
+# Clean temp files
+clean_temp() {
+    echo -e "${YELLOW}Cleaning temp files...${NC}"
     rm -rf /tmp/*
     rm -rf /var/tmp/*
-    echo -e "${GREEN}Temp files cleared${NC}"
+    echo -e "${GREEN}Temp files cleaned${NC}"
 }
 
-clear_mail() {
-    echo -e "${YELLOW}Clearing mail queue...${NC}"
-    postsuper -d ALL 2>/dev/null
-    rm -rf /var/spool/mail/*
-    echo -e "${GREEN}Mail queue cleared${NC}"
-}
-
-clear_user_cache() {
-    echo -e "${YELLOW}Clearing user cache...${NC}"
+# Clean user cache
+clean_user_cache() {
+    echo -e "${YELLOW}Cleaning user cache...${NC}"
     rm -rf /root/.cache/*
     find /home -type f -name ".cache" -exec rm -rf {} \;
-    echo -e "${GREEN}User cache cleared${NC}"
+    echo -e "${GREEN}User cache cleaned${NC}"
 }
 
-clear_all() {
-    read -p "Are you sure you want to clear everything? (y/n): " confirm
-    if [[ $confirm =~ ^[Yy]$ ]]; then
-        clear_cache
-        clear_logs
-        clear_temp
-        clear_mail
-        clear_user_cache
-        echo -e "${GREEN}All items cleared${NC}"
-    fi
+# Clean all
+clean_all() {
+    clean_cache
+    clean_logs
+    clean_temp
+    clean_user_cache
+    echo -e "${GREEN}All cleanup tasks completed${NC}"
 }
 
+# Main loop
 while true; do
     show_menu
     read -p "Select option: " choice
     case $choice in
-        1) clear_cache ;;
-        2) clear_logs ;;
-        3) clear_temp ;;
-        4) clear_mail ;;
-        5) clear_user_cache ;;
-        6) clear_all ;;
+        1) clean_cache ;;
+        2) clean_logs ;;
+        3) clean_temp ;;
+        4) clean_user_cache ;;
+        5) clean_all ;;
         0) break ;;
         *) echo -e "${RED}Invalid option${NC}" ;;
     esac

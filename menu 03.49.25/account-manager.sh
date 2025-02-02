@@ -175,58 +175,158 @@ change_server_config() {
     esac
 }
 
-# Main Menu
-while true; do
+# Show menu
+show_menu() {
     clear
-    echo -e "${BLUE}=== Account Manager ===${NC}"
-    echo -e "1) Lock Account"
-    echo -e "2) Unlock Account"
-    echo -e "3) Set Account Quota"
-    echo -e "4) Check User Login"
-    echo -e "5) Change Credentials"
-    echo -e "6) Server Configuration"
-    echo -e "7) Show Banned Users"
-    echo -e "8) Show Quota Usage"
-    echo -e "0) Back to Main Menu"
+    echo -e "${BLUE}=============================${NC}"
+    echo -e "${YELLOW}     ACCOUNT MANAGER     ${NC}"
+    echo -e "${BLUE}=============================${NC}"
+    echo -e ""
+    echo -e "${GREEN}1${NC}. Create Account"
+    echo -e "${GREEN}2${NC}. Delete Account"
+    echo -e "${GREEN}3${NC}. Extend Account"
+    echo -e "${GREEN}4${NC}. List Accounts"
+    echo -e "${GREEN}5${NC}. Monitor Users"
+    echo -e "${GREEN}6${NC}. Manage Quota"
+    echo -e "${GREEN}7${NC}. Lock Account"
+    echo -e "${GREEN}8${NC}. Unlock Account"
+    echo -e "${GREEN}9${NC}. Change Credentials"
+    echo -e "${GREEN}10${NC}. Server Configuration"
+    echo -e "${GREEN}11${NC}. Show Banned Users"
+    echo -e "${GREEN}12${NC}. Show Quota Usage"
+    echo -e "${GREEN}0${NC}. Back to Main Menu"
+    echo -e ""
+    echo -e "${BLUE}=============================${NC}"
+}
+
+# Create account
+create_account() {
+    read -p "Username: " user
+    read -p "Password: " pass
+    read -p "Duration (days): " duration
     
-    read -p "Select option: " option
-    case $option in
+    exp=$(date -d "+$duration days" +"%Y-%m-%d")
+    useradd -e "$exp" -s /bin/false -M $user
+    echo "$user:$pass" | chpasswd
+    
+    echo "$user $pass $exp" >> $SSH_DB
+    echo "$user $pass $exp" >> $XRAY_DB
+    echo "$user 0 0" >> $QUOTA_DB
+    
+    echo -e "${GREEN}Account created successfully${NC}"
+}
+
+# Delete account
+delete_account() {
+    read -p "Username to delete: " user
+    userdel -f $user
+    sed -i "/^$user /d" $SSH_DB
+    sed -i "/^$user /d" $XRAY_DB
+    sed -i "/^$user /d" $QUOTA_DB
+    echo -e "${GREEN}Account deleted successfully${NC}"
+}
+
+# Extend account
+extend_account() {
+    read -p "Username to extend: " user
+    read -p "Duration (days): " duration
+    
+    if grep -q "^$user " $SSH_DB; then
+        exp=$(date -d "+$duration days" +"%Y-%m-%d")
+        chage -E "$exp" $user
+        sed -i "/^$user / s/ [^ ]*$/ $exp/" $SSH_DB
+        sed -i "/^$user / s/ [^ ]*$/ $exp/" $XRAY_DB
+        echo -e "${GREEN}Account extended successfully${NC}"
+    else
+        echo -e "${RED}User not found${NC}"
+    fi
+}
+
+# List accounts
+list_accounts() {
+    echo -e "${YELLOW}User Accounts:${NC}"
+    echo -e "Username | Expiry | Quota Used"
+    echo -e "------------------------"
+    while IFS=' ' read -r user pass exp; do
+        quota=$(grep "^$user " $QUOTA_DB | awk '{print $2}')
+        echo -e "$user | $exp | $quota MB"
+    done < $SSH_DB
+}
+
+# Monitor users
+monitor_users() {
+    echo -e "${YELLOW}Online Users:${NC}"
+    echo -e "------------------------"
+    who
+    echo -e "\n${YELLOW}Connection History:${NC}"
+    last | head -n 10
+}
+
+# Manage quota
+manage_quota() {
+    echo -e "${YELLOW}Quota Management:${NC}"
+    echo -e "1. Set Quota"
+    echo -e "2. Reset Quota"
+    echo -e "3. View Quota"
+    read -p "Select option: " choice
+    
+    case $choice in
         1)
+            read -p "Username: " user
+            read -p "Quota (MB): " quota
+            sed -i "/^$user / s/ [^ ]*$/ $quota/" $QUOTA_DB
+            echo -e "${GREEN}Quota set successfully${NC}"
+            ;;
+        2)
+            read -p "Username: " user
+            sed -i "/^$user / s/ [^ ]*$/ 0/" $QUOTA_DB
+            echo -e "${GREEN}Quota reset successfully${NC}"
+            ;;
+        3)
+            echo -e "${YELLOW}User Quotas:${NC}"
+            cat $QUOTA_DB
+            ;;
+    esac
+}
+
+# Main loop
+while true; do
+    show_menu
+    read -p "Select option: " choice
+    case $choice in
+        1) create_account ;;
+        2) delete_account ;;
+        3) extend_account ;;
+        4) list_accounts ;;
+        5) monitor_users ;;
+        6) manage_quota ;;
+        7)
             read -p "Username: " user
             read -p "Reason: " reason
             lock_account "$user" "$reason"
             ;;
-        2)
+        8)
             read -p "Username: " user
             unlock_account "$user"
             ;;
-        3)
-            read -p "Username: " user
-            read -p "Quota (GB): " quota
-            sed -i "/^$user / s/[0-9]\+ [0-9]\+/$quota 0/" "$QUOTA_DB"
-            ;;
-        4)
-            read -p "Username: " user
-            echo -e "SSH Logins: $(check_login $user ssh)"
-            echo -e "XRAY Logins: $(check_login $user xray)"
-            ;;
-        5)
+        9)
             read -p "Username: " user
             read -p "Type (ssh/xray): " type
             change_credentials "$user" "$type"
             ;;
-        6)
+        10)
             change_server_config
             ;;
-        7)
+        11)
             echo -e "${YELLOW}Banned Users:${NC}"
             cat "$BANNED_DB"
             ;;
-        8)
+        12)
             echo -e "${YELLOW}Quota Usage:${NC}"
             cat "$QUOTA_DB"
             ;;
         0) break ;;
+        *) echo -e "${RED}Invalid option${NC}" ;;
     esac
-    read -p "Press enter to continue..."
+    read -n 1 -s -r -p "Press any key to continue"
 done 

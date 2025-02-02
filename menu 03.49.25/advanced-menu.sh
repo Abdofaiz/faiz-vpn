@@ -1,5 +1,5 @@
 #!/bin/bash
-# Advanced VPS Menu System
+# Advanced Menu Script
 
 # Colors
 RED='\033[0;31m'
@@ -8,140 +8,172 @@ YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-# Main Menu
-show_main_menu() {
+# Show menu
+show_menu() {
     clear
-    echo -e "${BLUE}╔═══════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║           VPS MANAGER MENU            ║${NC}"
-    echo -e "${BLUE}╚═══════════════════════════════════════╝${NC}"
-    echo -e "1) SSH & WebSocket Manager"
-    echo -e "2) XRAY Manager"
-    echo -e "3) OpenVPN Manager"
-    echo -e "4) L2TP Manager"
-    echo -e "5) Service Manager"
-    echo -e "6) System Tools"
-    echo -e "7) Security Center"
-    echo -e "8) Backup & Restore"
-    echo -e "0) Exit"
+    echo -e "${BLUE}=============================${NC}"
+    echo -e "${YELLOW}     ADVANCED MENU     ${NC}"
+    echo -e "${BLUE}=============================${NC}"
+    echo -e ""
+    echo -e "${GREEN}1${NC}. Service Manager"
+    echo -e "${GREEN}2${NC}. Port Manager"
+    echo -e "${GREEN}3${NC}. Security Settings"
+    echo -e "${GREEN}4${NC}. Backup Manager"
+    echo -e "${GREEN}5${NC}. System Monitor"
+    echo -e "${GREEN}6${NC}. Network Tools"
+    echo -e "${GREEN}0${NC}. Back to Main Menu"
+    echo -e ""
+    echo -e "${BLUE}=============================${NC}"
 }
 
-# SSH & WebSocket Menu
-ssh_ws_menu() {
-    clear
-    echo -e "${BLUE}=== SSH & WebSocket Manager ===${NC}"
-    echo -e "1) Create SSH User"
-    echo -e "2) Delete SSH User"
-    echo -e "3) Extend User Expiry"
-    echo -e "4) View SSH Users"
-    echo -e "5) Monitor SSH Users"
-    echo -e "6) WebSocket Settings"
-    echo -e "7) Change SSH Port"
-    echo -e "8) Change SSH Banner"
-    echo -e "0) Back"
-}
-
-# XRAY Menu
-xray_menu() {
-    clear
-    echo -e "${BLUE}=== XRAY Manager ===${NC}"
-    echo -e "1) Add VMESS User"
-    echo -e "2) Add VLESS User"
-    echo -e "3) Add TROJAN User"
-    echo -e "4) Delete User"
-    echo -e "5) View All Users"
-    echo -e "6) Show Config"
-    echo -e "7) Change Port"
-    echo -e "8) Renew Certificate"
-    echo -e "0) Back"
-}
-
-# OpenVPN Menu
-openvpn_menu() {
-    clear
-    echo -e "${BLUE}=== OpenVPN Manager ===${NC}"
-    echo -e "1) Create User"
-    echo -e "2) Delete User"
-    echo -e "3) Extend User"
-    echo -e "4) View Users"
-    echo -e "5) Monitor Users"
-    echo -e "6) Change Port"
-    echo -e "7) Generate Config"
-    echo -e "0) Back"
-}
-
-# Service Manager Menu
-service_menu() {
+# Service manager
+service_manager() {
     clear
     echo -e "${BLUE}=== Service Manager ===${NC}"
-    echo -e "1) View All Services"
-    echo -e "2) Start Service"
-    echo -e "3) Stop Service"
-    echo -e "4) Restart Service"
-    echo -e "5) View Service Logs"
-    echo -e "6) View Port Status"
-    echo -e "7) Change Ports"
-    echo -e "8) Restart All Services"
-    echo -e "0) Back"
+    echo -e "1. Start Service"
+    echo -e "2. Stop Service"
+    echo -e "3. Restart Service"
+    echo -e "4. View Status"
+    read -p "Select option: " choice
+    
+    case $choice in
+        1|2|3|4)
+            read -p "Enter service name: " service
+            case $choice in
+                1) systemctl start $service ;;
+                2) systemctl stop $service ;;
+                3) systemctl restart $service ;;
+                4) systemctl status $service ;;
+            esac
+            ;;
+    esac
 }
 
-# System Tools Menu
-system_menu() {
+# Port manager
+port_manager() {
     clear
-    echo -e "${BLUE}=== System Tools ===${NC}"
-    echo -e "1) System Information"
-    echo -e "2) Network Tools"
-    echo -e "3) Bandwidth Monitor"
-    echo -e "4) Speed Test"
-    echo -e "5) Clear Cache"
-    echo -e "6) Update System"
-    echo -e "7) Optimize System"
-    echo -e "8) Change Timezone"
-    echo -e "0) Back"
+    echo -e "${BLUE}=== Port Manager ===${NC}"
+    echo -e "1. View Open Ports"
+    echo -e "2. Change Port"
+    echo -e "3. Block Port"
+    echo -e "4. Unblock Port"
+    read -p "Select option: " choice
+    
+    case $choice in
+        1) netstat -tulpn ;;
+        2) 
+            read -p "Service (ssh/xray/nginx): " service
+            read -p "New port: " port
+            # Port change logic here
+            ;;
+        3|4)
+            read -p "Enter port to block/unblock: " port
+            if [ $choice -eq 3 ]; then
+                iptables -A INPUT -p tcp --dport $port -j DROP
+            else
+                iptables -D INPUT -p tcp --dport $port -j DROP
+            fi
+            ;;
+    esac
 }
 
-# Security Center Menu
-security_menu() {
+# Security settings
+security_settings() {
     clear
-    echo -e "${BLUE}=== Security Center ===${NC}"
-    echo -e "1) View Login History"
-    echo -e "2) Block IP"
-    echo -e "3) Unblock IP"
-    echo -e "4) View Blocked IPs"
-    echo -e "5) Fail2Ban Settings"
-    echo -e "6) Change Passwords"
-    echo -e "7) SSL Certificate"
-    echo -e "8) Firewall Settings"
-    echo -e "0) Back"
+    echo -e "${BLUE}=== Security Settings ===${NC}"
+    echo -e "1. Configure Fail2Ban"
+    echo -e "2. Update SSL Certificate"
+    echo -e "3. Change SSH Config"
+    echo -e "4. View Security Logs"
+    read -p "Select option: " choice
+    
+    case $choice in
+        1) nano /etc/fail2ban/jail.local ;;
+        2) certbot renew ;;
+        3) nano /etc/ssh/sshd_config ;;
+        4) tail -f /var/log/auth.log ;;
+    esac
 }
 
-# Backup & Restore Menu
-backup_menu() {
+# Backup manager
+backup_manager() {
     clear
-    echo -e "${BLUE}=== Backup & Restore ===${NC}"
-    echo -e "1) Backup All Settings"
-    echo -e "2) Restore From Backup"
-    echo -e "3) Schedule Backup"
-    echo -e "4) Auto-Backup Settings"
-    echo -e "5) View Backup History"
-    echo -e "6) Clean Old Backups"
-    echo -e "0) Back"
+    echo -e "${BLUE}=== Backup Manager ===${NC}"
+    echo -e "1. Create Backup"
+    echo -e "2. Restore Backup"
+    echo -e "3. Schedule Backup"
+    echo -e "4. View Backups"
+    read -p "Select option: " choice
+    
+    case $choice in
+        1) 
+            date=$(date +%Y%m%d)
+            tar -czf backup-$date.tar.gz /etc/xray /usr/local/etc/xray
+            echo -e "${GREEN}Backup created: backup-$date.tar.gz${NC}"
+            ;;
+        2)
+            read -p "Enter backup file: " file
+            tar -xzf $file -C /
+            echo -e "${GREEN}Backup restored${NC}"
+            ;;
+        3)
+            echo "0 0 * * * root tar -czf /root/backup-\$(date +\%Y\%m\%d).tar.gz /etc/xray" >> /etc/crontab
+            echo -e "${GREEN}Daily backup scheduled${NC}"
+            ;;
+        4)
+            ls -l backup-*.tar.gz 2>/dev/null || echo "No backups found"
+            ;;
+    esac
 }
 
-# Main Loop
+# System monitor
+system_monitor() {
+    clear
+    echo -e "${BLUE}=== System Monitor ===${NC}"
+    echo -e "CPU Usage: $(top -bn1 | grep "Cpu(s)" | awk '{print $2}')%"
+    echo -e "Memory Usage: $(free -m | awk 'NR==2{printf "%.2f%%", $3*100/$2}')"
+    echo -e "Disk Usage: $(df -h / | awk 'NR==2{print $5}')"
+    echo -e "\nActive Connections:"
+    netstat -an | grep ESTABLISHED | wc -l
+}
+
+# Network tools
+network_tools() {
+    clear
+    echo -e "${BLUE}=== Network Tools ===${NC}"
+    echo -e "1. Speed Test"
+    echo -e "2. Network Stats"
+    echo -e "3. DNS Lookup"
+    echo -e "4. Trace Route"
+    read -p "Select option: " choice
+    
+    case $choice in
+        1) speedtest-cli ;;
+        2) vnstat ;;
+        3)
+            read -p "Enter domain: " domain
+            dig $domain
+            ;;
+        4)
+            read -p "Enter host: " host
+            traceroute $host
+            ;;
+    esac
+}
+
+# Main loop
 while true; do
-    show_main_menu
-    read -p "Select option: " main_choice
-    case $main_choice in
-        1) source /usr/local/bin/ssh-manager.sh ;;
-        2) source /usr/local/bin/xray-manager.sh ;;
-        3) source /usr/local/bin/openvpn-manager.sh ;;
-        4) source /usr/local/bin/l2tp-manager.sh ;;
-        5) source /usr/local/bin/service-manager.sh ;;
-        6) source /usr/local/bin/system-tools.sh ;;
-        7) source /usr/local/bin/security-center.sh ;;
-        8) source /usr/local/bin/backup-manager.sh ;;
-        0) clear; exit 0 ;;
+    show_menu
+    read -p "Select option: " choice
+    case $choice in
+        1) service_manager ;;
+        2) port_manager ;;
+        3) security_settings ;;
+        4) backup_manager ;;
+        5) system_monitor ;;
+        6) network_tools ;;
+        0) break ;;
         *) echo -e "${RED}Invalid option${NC}" ;;
     esac
-    read -p "Press enter to continue..."
+    read -n 1 -s -r -p "Press any key to continue"
 done 
