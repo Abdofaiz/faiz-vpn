@@ -64,44 +64,9 @@ get_active_users
 # Banner
 clear
 echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
-echo -e "${CYAN}│${NC}               ${CYAN}SCRIPT BY USER_LEGEND${NC}               ${CYAN}│${NC}"
-echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
-echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
-echo -e "${CYAN}│${NC}                  ${CYAN}SYS INFO${NC}                         ${CYAN}│${NC}"
+echo -e "${CYAN}│${NC}               ${CYAN}VPN MANAGER${NC}                        ${CYAN}│${NC}"
 echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
 echo -e ""
-echo -e "${GREEN}OS SYSTEM${NC}    : $ID $VERSION_ID"
-echo -e "${GREEN}ARCH${NC}         : $ARCH"
-echo -e "${GREEN}KERNEL TYPE${NC}  : $KERNEL"
-echo -e "${GREEN}CPU MODEL${NC}    : $CPU_MODEL"
-echo -e "${GREEN}NUMBER CORES${NC} : $CPU_CORES"
-echo -e "${GREEN}CPU FREQ${NC}     : $CPU_FREQ MHz"
-echo -e "${GREEN}TOTAL RAM${NC}    : $TOTAL_RAM GB / $USED_RAM GB Used"
-echo -e "${GREEN}TOTAL SWAP${NC}   : $SWAP_TOTAL MB"
-echo -e "${GREEN}TOTAL DISK${NC}   : $DISK_INFO"
-echo -e "${GREEN}DOMAIN${NC}       : $DOMAIN"
-echo -e "${GREEN}SLOWDNS${NC}      : dns.$DOMAIN"
-echo -e "${GREEN}IP ADDRESS${NC}   : $IP"
-echo -e "${GREEN}ISP${NC}          : $ISP"
-echo -e "${GREEN}REGION${NC}       : $REGION [$TIMEZONE]"
-echo -e "${GREEN}SCRIPT VER${NC}   : $VERSION"
-echo -e ""
-
-# Account Info
-echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
-echo -e "     ${CYAN}SSH & OVPN${NC} : $SSH_USERS ${GREEN}ACTIVE${NC}"
-echo -e "     ${CYAN}XRAY${NC}       : $XRAY_USERS ${GREEN}ACTIVE${NC}"
-echo -e "     ${CYAN}L2TP${NC}       : $L2TP_USERS ${GREEN}ACTIVE${NC}"
-echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
-echo -e ""
-
-# Main Menu
-echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
-echo -e "${CYAN}│${NC}                ${CYAN}MAIN MENU${NC}                         ${CYAN}│${NC}"
-echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
-echo -e ""
-
-# Menu Options
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e " ${GREEN}1)${NC} SSH Menu"
 echo -e " ${GREEN}2)${NC} XRAY Menu"
