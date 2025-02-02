@@ -12,7 +12,7 @@ SSH_DB="/etc/ssh/.ssh.db"
 
 clear
 echo -e "${CYAN}┌─────────────────────────────────────────────────┐${NC}"
-echo -e "${CYAN}│${NC}            ${CYAN}DELETE SSH ACCOUNT${NC}                    ${CYAN}│${NC}"
+echo -e "${CYAN}│${NC}            ${CYAN}RENEW SSH ACCOUNT${NC}                     ${CYAN}│${NC}"
 echo -e "${CYAN}└─────────────────────────────────────────────────┘${NC}"
 echo -e ""
 
@@ -20,14 +20,19 @@ echo -e ""
 echo -e "Current Users:"
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 if [ -f "$SSH_DB" ]; then
-    grep "^###" "$SSH_DB" | cut -d' ' -f2 | nl -s ') '
+    while IFS= read -r line; do
+        user=$(echo $line | cut -d' ' -f2)
+        exp=$(echo $line | cut -d' ' -f4)
+        printf "%-4s %-20s %s\n" ")" "$user" "$exp"
+    done < <(grep "^###" "$SSH_DB") | nl
 else
     echo -e "${YELLOW}No users found${NC}"
 fi
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
-# Get username
-read -p "Enter username to delete : " user
+# Get user input
+read -p "Username to renew : " user
+read -p "Duration (days) : " duration
 
 # Check if user exists
 if ! grep -q "^### $user" "$SSH_DB"; then
@@ -35,8 +40,12 @@ if ! grep -q "^### $user" "$SSH_DB"; then
     exit 1
 fi
 
-# Delete user
-userdel -f "$user"
-sed -i "/^### $user/d" "$SSH_DB"
+# Calculate new expiry
+exp=$(date -d "+$duration days" +"%Y-%m-%d")
+chage -E "$exp" "$user"
 
-echo -e "${GREEN}User $user deleted successfully${NC}" 
+# Update database
+sed -i "s/^### $user .*/### $user $(grep "^### $user" "$SSH_DB" | cut -d' ' -f3) $exp/" "$SSH_DB"
+
+echo -e "${GREEN}Account $user renewed successfully${NC}"
+echo -e "New expiry: $exp" 
