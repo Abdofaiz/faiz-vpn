@@ -4,7 +4,6 @@
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
@@ -45,6 +44,7 @@ case $opt in
     0) clear ; ./menu.sh ;;
     *) clear ; ./menu/menu-bot.sh ;;
 esac
+
 echo -e " ${GREEN}1)${NC} Register IP Address"
 echo -e " ${GREEN}2)${NC} IP Lookup"
 echo -e " ${GREEN}3)${NC} Check IP to CDN"
@@ -52,6 +52,6 @@ echo -e " ${GREEN}4)${NC} Server Banner Check"
 echo -e " ${GREEN}5)${NC} Server Response Check"
 echo -e " ${GREEN}6)${NC} SSL Certificate Check"
 echo -e " ${GREEN}7)${NC} Bot Settings"
-+ echo -e " ${GREEN}8)${NC} User Management"
-+ echo -e " ${GREEN}9)${NC} Bandwidth Monitor"
-+ echo -e " ${GREEN}10)${NC} Generate Report"
+echo -e " ${GREEN}8)${NC} User Management"
+echo -e " ${GREEN}9)${NC} Bandwidth Monitor"
+echo -e " ${GREEN}10)${NC} Generate Report"
