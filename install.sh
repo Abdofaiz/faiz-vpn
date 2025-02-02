@@ -27,7 +27,7 @@ mkdir -p /etc/autoscript
 echo -e "${BLUE}Downloading scripts...${NC}"
 cd /tmp
 rm -rf autoscript-main autoscript.zip
-wget https://github.com/yourusername/autoscript/archive/refs/heads/main.zip -O autoscript.zip
+wget https://github.com/Abdofaiz/faiz-vpn/archive/refs/heads/main.zip -O autoscript.zip
 unzip autoscript.zip
 cd autoscript-main
 
