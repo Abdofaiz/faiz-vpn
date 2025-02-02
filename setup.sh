@@ -33,45 +33,60 @@ echo -e "\n${BLUE}[3/7]${NC} Downloading menu files..."
 cd /usr/local/vpsmgr
 wget -O menu.zip "https://github.com/Abdofaiz/faiz-vpn/archive/refs/heads/main.zip"
 unzip menu.zip
-cp -rf faiz-vpn-main/menu/* /usr/local/vpsmgr/menu/
-rm -rf menu.zip faiz-vpn-main
 
 # Install menu scripts
 echo -e "\n${BLUE}[4/7]${NC} Installing menu scripts..."
-cd /usr/local/vpsmgr/menu
-chmod +x *
-cp * /usr/local/sbin/
+cd /usr/local/vpsmgr
+cp -rf "faiz-vpn-main/menu 03.49.25/"* /usr/local/sbin/
+chmod +x /usr/local/sbin/*
 
 # Install protocols
 echo -e "\n${BLUE}[5/7]${NC} Installing protocols..."
-bash /usr/local/vpsmgr/menu/xray-install
-bash /usr/local/vpsmgr/menu/ssh-install
-bash /usr/local/vpsmgr/menu/trojan-install
+bash "faiz-vpn-main/xray 03.49.25/xray-setup.sh"
+bash "faiz-vpn-main/ssh 03.49.25/ssh-setup.sh"
+bash "faiz-vpn-main/trojango 03.49.25/trojan-setup.sh"
 
 # Configure services
 echo -e "\n${BLUE}[6/7]${NC} Configuring services..."
 systemctl restart nginx
 systemctl enable nginx
-systemctl restart xray
-systemctl enable xray
 
-# Install API and utils
+# Install additional components
 echo -e "\n${BLUE}[7/7]${NC} Installing additional components..."
-cd /usr/local/vpsmgr
-cp -rf api/* /usr/local/vpsmgr/api/
-cp -rf utils/* /usr/local/vpsmgr/utils/
-pip3 install -r api/requirements.txt
+cp -rf "faiz-vpn-main/api/"* /usr/local/vpsmgr/api/
+cp -rf "faiz-vpn-main/utils/"* /usr/local/vpsmgr/utils/
+cp -rf "faiz-vpn-main/websocket 03.49.25/"* /usr/local/vpsmgr/websocket/
+cp -rf "faiz-vpn-main/slowdns/"* /usr/local/vpsmgr/slowdns/
+cp -rf "faiz-vpn-main/openvpn/"* /usr/local/vpsmgr/openvpn/
+cp -rf "faiz-vpn-main/l2tp/"* /usr/local/vpsmgr/l2tp/
+cp -rf "faiz-vpn-main/dropbear/"* /usr/local/vpsmgr/dropbear/
+
+# Cleanup
+rm -rf menu.zip faiz-vpn-main
 
 # Update PATH
-echo 'PATH="/usr/local/vpsmgr/menu:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"' > /etc/environment
+echo 'PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"' > /etc/environment
 source /etc/environment
 
 echo -e "${GREEN}Installation completed!${NC}"
-echo -e "\nYou can now use the following commands:"
-echo -e "${YELLOW}menu${NC} - Main menu"
-echo -e "${YELLOW}ssh${NC} - SSH manager"
-echo -e "${YELLOW}xray${NC} - XRAY manager"
-echo -e "${YELLOW}trojan${NC} - Trojan manager"
+echo -e "\nAvailable commands:"
+echo -e "${YELLOW}menu${NC}          - Main menu"
+echo -e "${YELLOW}ssh-manager${NC}    - SSH manager"
+echo -e "${YELLOW}xray-manager${NC}   - XRAY manager"
+echo -e "${YELLOW}trojan-manager${NC} - Trojan manager"
+echo -e "${YELLOW}ws-manager${NC}     - WebSocket manager"
+echo -e "${YELLOW}openvpn${NC}        - OpenVPN manager"
+echo -e "${YELLOW}l2tp-manager${NC}   - L2TP manager"
+echo -e "${YELLOW}slowdns-manager${NC} - SlowDNS manager"
+echo -e "${YELLOW}backup-manager${NC}  - Backup manager"
+echo -e "${YELLOW}domain-manager${NC}  - Domain manager"
+echo -e "${YELLOW}port-manager${NC}    - Port manager"
+echo -e "${YELLOW}limit-manager${NC}   - Limit manager"
+echo -e "${YELLOW}user${NC}           - User management"
+echo -e "${YELLOW}monitor${NC}        - Server monitor"
+echo -e "${YELLOW}speedtest${NC}      - Speed test"
+echo -e "${YELLOW}update${NC}         - Update script"
+
 echo -e "\nDefault ports:"
 echo -e "SSH: 22"
 echo -e "XRAY: 443"
