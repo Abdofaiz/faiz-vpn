@@ -24,12 +24,16 @@ echo -e ""
 echo -e "Creating directories..."
 mkdir -p /etc/xray
 mkdir -p /var/log/xray
-mkdir -p ~/faiz-vpn/menu
+mkdir -p /root/faiz-vpn/menu
+
+# Copy menu scripts to faiz-vpn directory
+echo -e "Copying menu scripts..."
+cp -r ~/autoscript/menu/* /root/faiz-vpn/menu/
 
 # Create dummy config files
 echo -e "Creating test config files..."
 echo "domain.com" > /etc/xray/domain
-echo "1.0.0" > ~/faiz-vpn/version
+echo "1.0.0" > /root/faiz-vpn/version
 
 # Create dummy XRAY config
 cat > /etc/xray/config.json <<EOF
@@ -55,7 +59,7 @@ EOF
 
 # Make all menu scripts executable
 echo -e "Setting permissions..."
-chmod +x ~/faiz-vpn/menu/*
+chmod +x /root/faiz-vpn/menu/*
 
 echo -e ""
 echo -e "${GREEN}Test installation completed!${NC}"
