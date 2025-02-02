@@ -30,7 +30,7 @@ apt install -y nginx python3 python3-pip stunnel4 dropbear fail2ban
 
 # Create directory structure
 echo -e "\n${BLUE}[3/7]${NC} Creating directory structure..."
-mkdir -p /root/autoscript/{xray,nginx,menu}
+mkdir -p /root/autoscript/{api,backup,boot,client,dropbear,l2tp,menu,ohp,openvpn,setup,slowdns,ssh,trojango,udpgw,utils,websocket,xray}
 mkdir -p /usr/local/etc/xray
 mkdir -p /etc/nginx/conf.d
 
