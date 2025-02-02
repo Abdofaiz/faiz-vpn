@@ -44,6 +44,11 @@ wget -O renew-vmess https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/men
 wget -O trial-trojan https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/trial-trojan
 wget -O trial-vless https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/trial-vless
 wget -O trial-vmess https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/trial-vmess
+wget -O running https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/running
+wget -O ram https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/ram
+wget -O version https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/version
+wget -O domain https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/domain
+wget -O login https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/login
 
 # Create dummy config files
 echo -e "Creating test config files..."
