@@ -36,16 +36,23 @@ mkdir -p /etc/nginx/conf.d
 
 # Install XRAY
 echo -e "\n${BLUE}[4/7]${NC} Installing XRAY..."
+# Stop XRAY service if running
+systemctl stop xray >/dev/null 2>&1
+rm -rf /usr/local/bin/xray
 bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
 
 # Setup configurations
 echo -e "\n${BLUE}[5/7]${NC} Setting up configurations..."
+sleep 2
 
 # Create menu scripts
 echo -e "\n${BLUE}[6/7]${NC} Creating menu scripts..."
 
+# Create menu directory if it doesn't exist
+mkdir -p /usr/local/bin/menu/
+
 # Create SSH menu script
-cat > /usr/local/bin/ssh << 'EOF'
+cat > /usr/local/bin/menu/ssh << 'EOF'
 #!/bin/bash
 # SSH Manager Script
 # Colors
@@ -74,7 +81,7 @@ show_menu() {
 EOF
 
 # Create XRAY menu script
-cat > /usr/local/bin/xray << 'EOF'
+cat > /usr/local/bin/menu/xray-menu << 'EOF'
 #!/bin/bash
 # XRAY Manager Script
 # Colors
@@ -103,7 +110,7 @@ show_menu() {
 EOF
 
 # Create main menu script
-cat > /usr/local/bin/menu << 'EOF'
+cat > /usr/local/bin/menu/menu << 'EOF'
 #!/bin/bash
 # Main Menu Script
 # Colors
@@ -130,12 +137,20 @@ show_menu() {
 # ... rest of the menu script ...
 EOF
 
+# Create symlinks
+ln -sf /usr/local/bin/menu/ssh /usr/local/bin/ssh
+ln -sf /usr/local/bin/menu/xray-menu /usr/local/bin/xray-menu
+ln -sf /usr/local/bin/menu/menu /usr/local/bin/menu
+
 # Make scripts executable
-chmod +x /usr/local/bin/{menu,ssh,xray}
+chmod +x /usr/local/bin/menu/*
+chmod +x /usr/local/bin/{ssh,xray-menu,menu}
 
 # Configure services
 echo -e "\n${BLUE}[7/7]${NC} Configuring services..."
 systemctl daemon-reload
+
+# Enable services
 systemctl enable nginx
 systemctl enable xray
 systemctl enable stunnel4
@@ -143,6 +158,7 @@ systemctl enable dropbear
 systemctl enable fail2ban
 
 # Start services
+sleep 2
 systemctl restart nginx
 systemctl restart xray
 systemctl restart stunnel4
@@ -153,7 +169,7 @@ echo -e "\n${GREEN}Installation completed successfully!${NC}"
 echo -e "\nYou can now use the following commands:"
 echo -e "${YELLOW}menu${NC} - Main menu"
 echo -e "${YELLOW}ssh${NC} - SSH manager"
-echo -e "${YELLOW}xray${NC} - XRAY manager"
+echo -e "${YELLOW}xray-menu${NC} - XRAY manager"
 echo -e "\nDefault ports:"
 echo -e "SSH: 22"
 echo -e "XRAY: 443"
