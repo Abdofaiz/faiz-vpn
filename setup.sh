@@ -36,7 +36,6 @@ mkdir -p /etc/nginx/conf.d
 
 # Install XRAY
 echo -e "\n${BLUE}[4/7]${NC} Installing XRAY..."
-# Stop XRAY service if running
 systemctl stop xray >/dev/null 2>&1
 rm -rf /usr/local/bin/xray
 bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
@@ -48,11 +47,12 @@ sleep 2
 # Create menu scripts
 echo -e "\n${BLUE}[6/7]${NC} Creating menu scripts..."
 
-# Create menu directory if it doesn't exist
-mkdir -p /usr/local/bin/menu/
+# Clean up existing menu files
+rm -f /usr/local/bin/{menu,ssh,xray-menu}
+rm -rf /usr/local/bin/menu
 
-# Create SSH menu script
-cat > /usr/local/bin/menu/ssh << 'EOF'
+# Create SSH script
+cat > /usr/local/bin/ssh << 'EOF'
 #!/bin/bash
 # SSH Manager Script
 # Colors
@@ -80,8 +80,8 @@ show_menu() {
 # ... rest of the SSH script ...
 EOF
 
-# Create XRAY menu script
-cat > /usr/local/bin/menu/xray-menu << 'EOF'
+# Create XRAY script
+cat > /usr/local/bin/xray-menu << 'EOF'
 #!/bin/bash
 # XRAY Manager Script
 # Colors
@@ -110,7 +110,7 @@ show_menu() {
 EOF
 
 # Create main menu script
-cat > /usr/local/bin/menu/menu << 'EOF'
+cat > /usr/local/bin/menu << 'EOF'
 #!/bin/bash
 # Main Menu Script
 # Colors
@@ -137,14 +137,8 @@ show_menu() {
 # ... rest of the menu script ...
 EOF
 
-# Create symlinks
-ln -sf /usr/local/bin/menu/ssh /usr/local/bin/ssh
-ln -sf /usr/local/bin/menu/xray-menu /usr/local/bin/xray-menu
-ln -sf /usr/local/bin/menu/menu /usr/local/bin/menu
-
 # Make scripts executable
-chmod +x /usr/local/bin/menu/*
-chmod +x /usr/local/bin/{ssh,xray-menu,menu}
+chmod +x /usr/local/bin/{menu,ssh,xray-menu}
 
 # Configure services
 echo -e "\n${BLUE}[7/7]${NC} Configuring services..."
