@@ -21,19 +21,19 @@ mkdir -p /usr/local/etc/xray
 mkdir -p /var/log/xray
 mkdir -p /var/log/nginx
 mkdir -p /etc/slowdns
-mkdir -p /etc/autoscript
+mkdir -p /etc/faiz-vpn
 
 # Clone repository
 echo -e "${BLUE}Downloading scripts...${NC}"
 cd /tmp
-rm -rf autoscript-main autoscript.zip
-wget https://github.com/Abdofaiz/faiz-vpn/archive/refs/heads/main.zip -O autoscript.zip
-unzip autoscript.zip
-cd autoscript-main
+rm -rf faiz-vpn-main faiz-vpn.zip
+wget https://github.com/Abdofaiz/faiz-vpn/archive/refs/heads/main.zip -O faiz-vpn.zip
+unzip faiz-vpn.zip
+cd faiz-vpn-main
 
 # Copy files to system
 cp -r menu/* /usr/local/bin/
-cp -r setup/* /usr/local/etc/autoscript/
+cp -r setup/* /usr/local/etc/faiz-vpn/
 cp -r utils/* /usr/local/bin/
 
 # Make scripts executable
@@ -94,20 +94,20 @@ chmod +x /usr/local/bin/menu
 
 # Run setup scripts
 echo -e "${BLUE}Running setup scripts...${NC}"
-bash /root/autoscript/setup/main-setup.sh
-bash /root/autoscript/ssh/ssh-setup.sh
-bash /root/autoscript/websocket/ws-setup.sh
-bash /root/autoscript/xray/xray-setup.sh
-bash /root/autoscript/openvpn/openvpn-setup.sh
-bash /root/autoscript/l2tp/l2tp-setup.sh
-bash /root/autoscript/slowdns/slowdns-setup.sh
-bash /root/autoscript/udpgw/udpgw-setup.sh
-bash /root/autoscript/backup/backup-setup.sh
-bash /root/autoscript/dropbear/dropbear-setup.sh
+bash /root/faiz-vpn/setup/main-setup.sh
+bash /root/faiz-vpn/ssh/ssh-setup.sh
+bash /root/faiz-vpn/websocket/ws-setup.sh
+bash /root/faiz-vpn/xray/xray-setup.sh
+bash /root/faiz-vpn/openvpn/openvpn-setup.sh
+bash /root/faiz-vpn/l2tp/l2tp-setup.sh
+bash /root/faiz-vpn/slowdns/slowdns-setup.sh
+bash /root/faiz-vpn/udpgw/udpgw-setup.sh
+bash /root/faiz-vpn/backup/backup-setup.sh
+bash /root/faiz-vpn/dropbear/dropbear-setup.sh
 
 # Run tests
 echo -e "${BLUE}Testing installation...${NC}"
-bash /root/autoscript/test-install.sh
+bash /root/faiz-vpn/test-install.sh
 
 echo -e "${GREEN}Installation completed!${NC}"
 echo -e "Use ${YELLOW}menu${NC} command to access the management menu" 
