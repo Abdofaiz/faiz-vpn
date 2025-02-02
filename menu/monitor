@@ -1,0 +1,109 @@
+#!/bin/bash
+# Monitor Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+show_menu() {
+    clear
+    echo -e "${BLUE}=============================${NC}"
+    echo -e "${YELLOW}     SYSTEM MONITOR     ${NC}"
+    echo -e "${BLUE}=============================${NC}"
+    echo -e ""
+    echo -e "${GREEN}1${NC}. System Information"
+    echo -e "${GREEN}2${NC}. Service Status"
+    echo -e "${GREEN}3${NC}. Online Users"
+    echo -e "${GREEN}4${NC}. Bandwidth Usage"
+    echo -e "${GREEN}5${NC}. Server Load"
+    echo -e "${GREEN}6${NC}. Connection Details"
+    echo -e "${GREEN}0${NC}. Back to Main Menu"
+    echo -e ""
+    echo -e "${BLUE}=============================${NC}"
+}
+
+system_info() {
+    echo -e "${YELLOW}System Information:${NC}"
+    echo -e "------------------------"
+    echo -e "OS: $(cat /etc/os-release | grep PRETTY_NAME | cut -d'"' -f2)"
+    echo -e "Kernel: $(uname -r)"
+    echo -e "CPU: $(grep "model name" /proc/cpuinfo | head -1 | cut -d':' -f2)"
+    echo -e "Memory: $(free -h | grep Mem | awk '{print $2}')"
+    echo -e "Uptime: $(uptime -p)"
+    echo -e "Last Update: $(stat -c %y /var/cache/apt/pkgcache.bin | cut -d' ' -f1)"
+}
+
+service_status() {
+    echo -e "${YELLOW}Service Status:${NC}"
+    echo -e "------------------------"
+    services=("ssh" "dropbear" "stunnel4" "xray" "nginx" "fail2ban")
+    for service in "${services[@]}"; do
+        status=$(systemctl is-active $service)
+        if [ "$status" = "active" ]; then
+            echo -e "$service: ${GREEN}RUNNING${NC}"
+        else
+            echo -e "$service: ${RED}STOPPED${NC}"
+        fi
+    done
+}
+
+online_users() {
+    echo -e "${YELLOW}Online Users:${NC}"
+    echo -e "------------------------"
+    echo -e "\nSSH Users:"
+    who
+    echo -e "\nXRAY Users:"
+    netstat -anp | grep ESTABLISHED | grep xray
+    echo -e "\nWebSocket Users:"
+    netstat -anp | grep ESTABLISHED | grep nginx
+}
+
+bandwidth_usage() {
+    echo -e "${YELLOW}Bandwidth Usage:${NC}"
+    echo -e "------------------------"
+    echo -e "Today's Usage:"
+    vnstat -d 1
+    echo -e "\nMonthly Usage:"
+    vnstat -m
+}
+
+server_load() {
+    echo -e "${YELLOW}Server Load:${NC}"
+    echo -e "------------------------"
+    echo -e "CPU Usage: $(top -bn1 | grep "Cpu(s)" | awk '{print $2 + $4}')%"
+    echo -e "\nMemory Usage:"
+    free -h
+    echo -e "\nDisk Usage:"
+    df -h
+}
+
+connection_details() {
+    echo -e "${YELLOW}Connection Details:${NC}"
+    echo -e "------------------------"
+    echo -e "Total Connections: $(netstat -anp | grep ESTABLISHED | wc -l)"
+    echo -e "\nConnection by Service:"
+    echo -e "SSH: $(netstat -anp | grep ESTABLISHED | grep sshd | wc -l)"
+    echo -e "XRAY: $(netstat -anp | grep ESTABLISHED | grep xray | wc -l)"
+    echo -e "WebSocket: $(netstat -anp | grep ESTABLISHED | grep nginx | wc -l)"
+    echo -e "\nTop 10 IP Connections:"
+    netstat -anp | grep ESTABLISHED | awk '{print $5}' | cut -d: -f1 | sort | uniq -c | sort -rn | head -n 10
+}
+
+while true; do
+    show_menu
+    read -p "Select option: " choice
+    case $choice in
+        1) system_info ;;
+        2) service_status ;;
+        3) online_users ;;
+        4) bandwidth_usage ;;
+        5) server_load ;;
+        6) connection_details ;;
+        0) break ;;
+        *) echo -e "${RED}Invalid option${NC}" ;;
+    esac
+    read -n 1 -s -r -p "Press any key to continue"
+done 

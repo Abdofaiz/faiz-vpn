@@ -1,0 +1,149 @@
+#!/bin/bash
+# Theme Manager Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+show_menu() {
+    clear
+    echo -e "${BLUE}=============================${NC}"
+    echo -e "${YELLOW}     THEME MANAGER     ${NC}"
+    echo -e "${BLUE}=============================${NC}"
+    echo -e ""
+    echo -e "${GREEN}1${NC}. Change Menu Color"
+    echo -e "${GREEN}2${NC}. Change Banner"
+    echo -e "${GREEN}3${NC}. Change Message"
+    echo -e "${GREEN}4${NC}. Change Background"
+    echo -e "${GREEN}5${NC}. Current Theme"
+    echo -e "${GREEN}6${NC}. Reset Theme"
+    echo -e "${GREEN}0${NC}. Back to Main Menu"
+    echo -e ""
+    echo -e "${BLUE}=============================${NC}"
+}
+
+change_color() {
+    echo -e "${YELLOW}Select Menu Color:${NC}"
+    echo -e "1. Blue (Default)"
+    echo -e "2. Green"
+    echo -e "3. Red"
+    echo -e "4. Yellow"
+    echo -e "5. Purple"
+    read -p "Select option: " choice
+    
+    case $choice in
+        1) color='\033[0;34m' ;;
+        2) color='\033[0;32m' ;;
+        3) color='\033[0;31m' ;;
+        4) color='\033[0;33m' ;;
+        5) color='\033[0;35m' ;;
+        *) echo -e "${RED}Invalid option${NC}" ; return ;;
+    esac
+    
+    sed -i "s/BLUE=.*/BLUE='$color'/" /root/autoscript/menu/*
+    echo -e "${GREEN}Menu color changed${NC}"
+}
+
+change_banner() {
+    echo -e "${YELLOW}Banner Settings:${NC}"
+    echo -e "1. Custom Text"
+    echo -e "2. ASCII Art"
+    echo -e "3. Remove Banner"
+    read -p "Select option: " choice
+    
+    case $choice in
+        1)
+            read -p "Enter banner text: " text
+            echo "$text" > /etc/banner
+            ;;
+        2)
+            echo -e "Enter ASCII art (Ctrl+D when done):"
+            cat > /etc/banner
+            ;;
+        3)
+            rm -f /etc/banner
+            ;;
+        *) echo -e "${RED}Invalid option${NC}" ; return ;;
+    esac
+    
+    echo -e "${GREEN}Banner updated${NC}"
+}
+
+change_message() {
+    echo -e "${YELLOW}Message Settings:${NC}"
+    echo -e "1. Login Message"
+    echo -e "2. MOTD"
+    echo -e "3. Issue"
+    read -p "Select option: " choice
+    
+    case $choice in
+        1)
+            read -p "Enter login message: " msg
+            echo "$msg" > /etc/profile.d/custom.sh
+            ;;
+        2)
+            nano /etc/motd
+            ;;
+        3)
+            nano /etc/issue
+            ;;
+        *) echo -e "${RED}Invalid option${NC}" ;;
+    esac
+}
+
+change_background() {
+    echo -e "${YELLOW}Background Settings:${NC}"
+    echo -e "1. Default"
+    echo -e "2. Dark"
+    echo -e "3. Light"
+    read -p "Select option: " choice
+    
+    case $choice in
+        1) bg="default" ;;
+        2) bg="dark" ;;
+        3) bg="light" ;;
+        *) echo -e "${RED}Invalid option${NC}" ; return ;;
+    esac
+    
+    echo "$bg" > /root/autoscript/theme
+    echo -e "${GREEN}Background changed to $bg${NC}"
+}
+
+current_theme() {
+    echo -e "${YELLOW}Current Theme Settings:${NC}"
+    echo -e "------------------------"
+    echo -e "Menu Color: $(grep "BLUE=" /root/autoscript/menu/menu | cut -d"'" -f2)"
+    echo -e "Banner: $(cat /etc/banner 2>/dev/null || echo "Not set")"
+    echo -e "Login Message: $(cat /etc/profile.d/custom.sh 2>/dev/null || echo "Not set")"
+    echo -e "Background: $(cat /root/autoscript/theme 2>/dev/null || echo "Default")"
+}
+
+reset_theme() {
+    read -p "Reset all theme settings? (y/n): " confirm
+    if [[ $confirm =~ ^[Yy]$ ]]; then
+        sed -i "s/BLUE=.*/BLUE='\033[0;34m'/" /root/autoscript/menu/*
+        rm -f /etc/banner
+        rm -f /etc/profile.d/custom.sh
+        echo "default" > /root/autoscript/theme
+        echo -e "${GREEN}Theme reset to default${NC}"
+    fi
+}
+
+while true; do
+    show_menu
+    read -p "Select option: " choice
+    case $choice in
+        1) change_color ;;
+        2) change_banner ;;
+        3) change_message ;;
+        4) change_background ;;
+        5) current_theme ;;
+        6) reset_theme ;;
+        0) break ;;
+        *) echo -e "${RED}Invalid option${NC}" ;;
+    esac
+    read -n 1 -s -r -p "Press any key to continue"
+done 

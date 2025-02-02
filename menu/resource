@@ -1,0 +1,103 @@
+#!/bin/bash
+# Resource Manager Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+show_menu() {
+    clear
+    echo -e "${BLUE}=============================${NC}"
+    echo -e "${YELLOW}     RESOURCE MANAGER     ${NC}"
+    echo -e "${BLUE}=============================${NC}"
+    echo -e ""
+    echo -e "${GREEN}1${NC}. CPU Usage"
+    echo -e "${GREEN}2${NC}. Memory Usage"
+    echo -e "${GREEN}3${NC}. Disk Usage"
+    echo -e "${GREEN}4${NC}. Bandwidth Usage"
+    echo -e "${GREEN}5${NC}. Process List"
+    echo -e "${GREEN}6${NC}. Network Stats"
+    echo -e "${GREEN}0${NC}. Back to Main Menu"
+    echo -e ""
+    echo -e "${BLUE}=============================${NC}"
+}
+
+cpu_usage() {
+    echo -e "${YELLOW}CPU Information:${NC}"
+    echo -e "------------------------"
+    echo -e "CPU Usage: $(top -bn1 | grep "Cpu(s)" | awk '{print $2 + $4}')%"
+    echo -e "\nTop CPU Processes:"
+    ps aux --sort=-%cpu | head -6 | awk 'NR>1 {print $3"% - "$11}'
+    echo -e "\nCPU Load Average: $(uptime | awk -F'load average:' '{print $2}')"
+}
+
+memory_usage() {
+    echo -e "${YELLOW}Memory Information:${NC}"
+    echo -e "------------------------"
+    free -h
+    echo -e "\nTop Memory Processes:"
+    ps aux --sort=-%mem | head -6 | awk 'NR>1 {print $4"% - "$11}'
+    echo -e "\nSwap Usage:"
+    swapon --show
+}
+
+disk_usage() {
+    echo -e "${YELLOW}Disk Information:${NC}"
+    echo -e "------------------------"
+    df -h
+    echo -e "\nLargest Directories:"
+    du -h /root/* | sort -rh | head -5
+    echo -e "\nInode Usage:"
+    df -i | grep -v "tmpfs"
+}
+
+bandwidth_usage() {
+    echo -e "${YELLOW}Bandwidth Information:${NC}"
+    echo -e "------------------------"
+    echo -e "Today's Usage:"
+    vnstat -d 1
+    echo -e "\nMonthly Usage:"
+    vnstat -m
+    echo -e "\nTop Network Processes:"
+    nethogs -t -c 5 2>/dev/null
+}
+
+process_list() {
+    echo -e "${YELLOW}Process Information:${NC}"
+    echo -e "------------------------"
+    echo -e "Running Services:"
+    systemctl list-units --type=service --state=running
+    echo -e "\nZombie Processes:"
+    ps aux | awk {'print $8'}  | grep -w Z
+    echo -e "\nTotal Processes: $(ps aux | wc -l)"
+}
+
+network_stats() {
+    echo -e "${YELLOW}Network Statistics:${NC}"
+    echo -e "------------------------"
+    echo -e "Active Connections:"
+    netstat -an | grep ESTABLISHED | wc -l
+    echo -e "\nConnection by State:"
+    netstat -an | awk '{print $6}' | sort | uniq -c | sort -rn
+    echo -e "\nNetwork Interfaces:"
+    ip -br addr show
+}
+
+while true; do
+    show_menu
+    read -p "Select option: " choice
+    case $choice in
+        1) cpu_usage ;;
+        2) memory_usage ;;
+        3) disk_usage ;;
+        4) bandwidth_usage ;;
+        5) process_list ;;
+        6) network_stats ;;
+        0) break ;;
+        *) echo -e "${RED}Invalid option${NC}" ;;
+    esac
+    read -n 1 -s -r -p "Press any key to continue"
+done 

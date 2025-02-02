@@ -1,0 +1,139 @@
+#!/bin/bash
+# Limit Manager Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+show_menu() {
+    clear
+    echo -e "${BLUE}=============================${NC}"
+    echo -e "${YELLOW}     LIMIT MANAGER     ${NC}"
+    echo -e "${BLUE}=============================${NC}"
+    echo -e ""
+    echo -e "${GREEN}1${NC}. Set Speed Limit"
+    echo -e "${GREEN}2${NC}. Set Connection Limit"
+    echo -e "${GREEN}3${NC}. Set IP Limit"
+    echo -e "${GREEN}4${NC}. Show Limits"
+    echo -e "${GREEN}5${NC}. Reset Limits"
+    echo -e "${GREEN}6${NC}. Limit Status"
+    echo -e "${GREEN}0${NC}. Back to Main Menu"
+    echo -e ""
+    echo -e "${BLUE}=============================${NC}"
+}
+
+speed_limit() {
+    echo -e "${YELLOW}Set Speed Limit:${NC}"
+    echo -e "1. 1 Mbps"
+    echo -e "2. 2 Mbps"
+    echo -e "3. 5 Mbps"
+    echo -e "4. 10 Mbps"
+    echo -e "5. Custom"
+    read -p "Select option: " choice
+    
+    case $choice in
+        1) speed="1mbit" ;;
+        2) speed="2mbit" ;;
+        3) speed="5mbit" ;;
+        4) speed="10mbit" ;;
+        5) 
+            read -p "Enter speed in Mbps: " custom
+            speed="${custom}mbit"
+            ;;
+        *) echo -e "${RED}Invalid option${NC}" ; return ;;
+    esac
+    
+    wondershaper eth0 $speed $speed
+    echo -e "${GREEN}Speed limit set to $speed${NC}"
+}
+
+connection_limit() {
+    echo -e "${YELLOW}Set Connection Limit:${NC}"
+    read -p "Maximum connections per IP: " conn
+    if [[ $conn =~ ^[0-9]+$ ]]; then
+        iptables -A INPUT -p tcp --syn -m connlimit --connlimit-above $conn -j REJECT
+        echo -e "${GREEN}Connection limit set to $conn${NC}"
+    else
+        echo -e "${RED}Invalid input${NC}"
+    fi
+}
+
+ip_limit() {
+    echo -e "${YELLOW}Set IP Limit:${NC}"
+    read -p "Maximum IPs per user: " ips
+    if [[ $ips =~ ^[0-9]+$ ]]; then
+        echo "$ips" > /etc/xray/ip_limit
+        echo -e "${GREEN}IP limit set to $ips${NC}"
+    else
+        echo -e "${RED}Invalid input${NC}"
+    fi
+}
+
+show_limits() {
+    echo -e "${YELLOW}Current Limits:${NC}"
+    echo -e "------------------------"
+    echo -e "Speed Limit: $(wondershaper eth0 | grep "rate" | awk '{print $2}')"
+    echo -e "Connection Limit: $(iptables -nvL | grep "connlimit" | awk '{print $11}')"
+    echo -e "IP Limit: $(cat /etc/xray/ip_limit 2>/dev/null || echo "Not set")"
+}
+
+reset_limits() {
+    echo -e "${YELLOW}Reset which limit?${NC}"
+    echo -e "1. Speed Limit"
+    echo -e "2. Connection Limit"
+    echo -e "3. IP Limit"
+    echo -e "4. All Limits"
+    read -p "Select option: " choice
+    
+    case $choice in
+        1)
+            wondershaper clear eth0
+            echo -e "${GREEN}Speed limit reset${NC}"
+            ;;
+        2)
+            iptables -D INPUT -p tcp --syn -m connlimit --connlimit-above 0 -j REJECT
+            echo -e "${GREEN}Connection limit reset${NC}"
+            ;;
+        3)
+            rm -f /etc/xray/ip_limit
+            echo -e "${GREEN}IP limit reset${NC}"
+            ;;
+        4)
+            wondershaper clear eth0
+            iptables -D INPUT -p tcp --syn -m connlimit --connlimit-above 0 -j REJECT
+            rm -f /etc/xray/ip_limit
+            echo -e "${GREEN}All limits reset${NC}"
+            ;;
+        *) echo -e "${RED}Invalid option${NC}" ;;
+    esac
+}
+
+limit_status() {
+    echo -e "${YELLOW}Limit Status:${NC}"
+    echo -e "------------------------"
+    echo -e "Network Interface:"
+    ifconfig eth0 | grep "RX packets"
+    echo -e "\nActive Connections:"
+    netstat -an | grep ESTABLISHED | wc -l
+    echo -e "\nIP Connections:"
+    netstat -ntu | awk '{print $5}' | cut -d: -f1 | sort | uniq -c | sort -n
+}
+
+while true; do
+    show_menu
+    read -p "Select option: " choice
+    case $choice in
+        1) speed_limit ;;
+        2) connection_limit ;;
+        3) ip_limit ;;
+        4) show_limits ;;
+        5) reset_limits ;;
+        6) limit_status ;;
+        0) break ;;
+        *) echo -e "${RED}Invalid option${NC}" ;;
+    esac
+    read -n 1 -s -r -p "Press any key to continue"
+done 

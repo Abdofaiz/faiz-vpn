@@ -1,0 +1,112 @@
+#!/bin/bash
+# Bandwidth Manager Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+show_menu() {
+    clear
+    echo -e "${BLUE}=============================${NC}"
+    echo -e "${YELLOW}     BANDWIDTH MANAGER     ${NC}"
+    echo -e "${BLUE}=============================${NC}"
+    echo -e ""
+    echo -e "${GREEN}1${NC}. Total Usage"
+    echo -e "${GREEN}2${NC}. Daily Usage"
+    echo -e "${GREEN}3${NC}. Monthly Usage"
+    echo -e "${GREEN}4${NC}. Top Users"
+    echo -e "${GREEN}5${NC}. Live Traffic"
+    echo -e "${GREEN}6${NC}. Clear Stats"
+    echo -e "${GREEN}0${NC}. Back to Main Menu"
+    echo -e ""
+    echo -e "${BLUE}=============================${NC}"
+}
+
+total_usage() {
+    echo -e "${YELLOW}Total Bandwidth Usage:${NC}"
+    echo -e "------------------------"
+    vnstat -t
+    echo -e "\nTotal Data:"
+    vnstat -tr
+}
+
+daily_usage() {
+    echo -e "${YELLOW}Daily Bandwidth Usage:${NC}"
+    echo -e "------------------------"
+    vnstat -d
+    echo -e "\nHourly Usage:"
+    vnstat -h
+}
+
+monthly_usage() {
+    echo -e "${YELLOW}Monthly Bandwidth Usage:${NC}"
+    echo -e "------------------------"
+    vnstat -m
+    echo -e "\nWeekly Usage:"
+    vnstat -w
+}
+
+top_users() {
+    echo -e "${YELLOW}Top Bandwidth Users:${NC}"
+    echo -e "------------------------"
+    echo -e "Current Sessions:"
+    iftop -n -N -P -t -s 5 2>/dev/null
+    echo -e "\nAccumulated Usage:"
+    nethogs -t -c 10 2>/dev/null
+}
+
+live_traffic() {
+    echo -e "${YELLOW}Live Network Traffic:${NC}"
+    echo -e "------------------------"
+    echo -e "Press Ctrl+C to exit"
+    sleep 2
+    vnstat -l
+}
+
+clear_stats() {
+    echo -e "${YELLOW}Clear Bandwidth Statistics:${NC}"
+    echo -e "1. Clear today's stats"
+    echo -e "2. Clear monthly stats"
+    echo -e "3. Reset all stats"
+    read -p "Select option: " choice
+    
+    case $choice in
+        1)
+            vnstat -d --remove
+            echo -e "${GREEN}Today's statistics cleared${NC}"
+            ;;
+        2)
+            vnstat -m --remove
+            echo -e "${GREEN}Monthly statistics cleared${NC}"
+            ;;
+        3)
+            read -p "Are you sure? (y/n): " confirm
+            if [[ $confirm =~ ^[Yy]$ ]]; then
+                systemctl stop vnstat
+                rm -rf /var/lib/vnstat/*
+                systemctl start vnstat
+                echo -e "${GREEN}All statistics reset${NC}"
+            fi
+            ;;
+        *) echo -e "${RED}Invalid option${NC}" ;;
+    esac
+}
+
+while true; do
+    show_menu
+    read -p "Select option: " choice
+    case $choice in
+        1) total_usage ;;
+        2) daily_usage ;;
+        3) monthly_usage ;;
+        4) top_users ;;
+        5) live_traffic ;;
+        6) clear_stats ;;
+        0) break ;;
+        *) echo -e "${RED}Invalid option${NC}" ;;
+    esac
+    read -n 1 -s -r -p "Press any key to continue"
+done 

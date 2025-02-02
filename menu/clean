@@ -1,0 +1,90 @@
+#!/bin/bash
+# System Cleanup Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+show_menu() {
+    clear
+    echo -e "${BLUE}=============================${NC}"
+    echo -e "${YELLOW}     CLEANUP MANAGER     ${NC}"
+    echo -e "${BLUE}=============================${NC}"
+    echo -e ""
+    echo -e "${GREEN}1${NC}. Clear System Cache"
+    echo -e "${GREEN}2${NC}. Clear Log Files"
+    echo -e "${GREEN}3${NC}. Clear Temp Files"
+    echo -e "${GREEN}4${NC}. Clear Mail Queue"
+    echo -e "${GREEN}5${NC}. Clear User Cache"
+    echo -e "${GREEN}6${NC}. Clear All"
+    echo -e "${GREEN}0${NC}. Back to Main Menu"
+    echo -e ""
+    echo -e "${BLUE}=============================${NC}"
+}
+
+clear_cache() {
+    echo -e "${YELLOW}Clearing system cache...${NC}"
+    sync; echo 3 > /proc/sys/vm/drop_caches
+    apt clean
+    apt autoclean
+    echo -e "${GREEN}System cache cleared${NC}"
+}
+
+clear_logs() {
+    echo -e "${YELLOW}Clearing log files...${NC}"
+    find /var/log -type f -name "*.log" -exec truncate -s 0 {} \;
+    find /var/log -type f -name "*.gz" -exec rm -f {} \;
+    echo -e "${GREEN}Log files cleared${NC}"
+}
+
+clear_temp() {
+    echo -e "${YELLOW}Clearing temp files...${NC}"
+    rm -rf /tmp/*
+    rm -rf /var/tmp/*
+    echo -e "${GREEN}Temp files cleared${NC}"
+}
+
+clear_mail() {
+    echo -e "${YELLOW}Clearing mail queue...${NC}"
+    postsuper -d ALL 2>/dev/null
+    rm -rf /var/spool/mail/*
+    echo -e "${GREEN}Mail queue cleared${NC}"
+}
+
+clear_user_cache() {
+    echo -e "${YELLOW}Clearing user cache...${NC}"
+    rm -rf /root/.cache/*
+    find /home -type f -name ".cache" -exec rm -rf {} \;
+    echo -e "${GREEN}User cache cleared${NC}"
+}
+
+clear_all() {
+    read -p "Are you sure you want to clear everything? (y/n): " confirm
+    if [[ $confirm =~ ^[Yy]$ ]]; then
+        clear_cache
+        clear_logs
+        clear_temp
+        clear_mail
+        clear_user_cache
+        echo -e "${GREEN}All items cleared${NC}"
+    fi
+}
+
+while true; do
+    show_menu
+    read -p "Select option: " choice
+    case $choice in
+        1) clear_cache ;;
+        2) clear_logs ;;
+        3) clear_temp ;;
+        4) clear_mail ;;
+        5) clear_user_cache ;;
+        6) clear_all ;;
+        0) break ;;
+        *) echo -e "${RED}Invalid option${NC}" ;;
+    esac
+    read -n 1 -s -r -p "Press any key to continue"
+done 
