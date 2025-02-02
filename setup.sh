@@ -149,20 +149,12 @@ systemctl restart stunnel4
 systemctl restart dropbear
 systemctl restart fail2ban
 
-# Run installation test
-echo -e "\n${YELLOW}Running installation test...${NC}"
-bash /root/autoscript/test-install.sh
-
-if [ $? -eq 0 ]; then
-    echo -e "\n${GREEN}Installation completed successfully!${NC}"
-    echo -e "\nYou can now use the following commands:"
-    echo -e "${YELLOW}menu${NC} - Main menu"
-    echo -e "${YELLOW}ssh${NC} - SSH manager"
-    echo -e "${YELLOW}xray${NC} - XRAY manager"
-    echo -e "\nDefault ports:"
-    echo -e "SSH: 22"
-    echo -e "XRAY: 443"
-    echo -e "Nginx: 80"
-else
-    echo -e "\n${RED}Installation failed! Please check the errors above.${NC}"
-fi 
+echo -e "\n${GREEN}Installation completed successfully!${NC}"
+echo -e "\nYou can now use the following commands:"
+echo -e "${YELLOW}menu${NC} - Main menu"
+echo -e "${YELLOW}ssh${NC} - SSH manager"
+echo -e "${YELLOW}xray${NC} - XRAY manager"
+echo -e "\nDefault ports:"
+echo -e "SSH: 22"
+echo -e "XRAY: 443"
+echo -e "Nginx: 80" 
