@@ -53,46 +53,64 @@ wget -O login https://raw.githubusercontent.com/Abdofaiz/faiz-vpn/main/menu/logi
 # Create main menu script
 cat > /root/faiz-vpn/menu/menu <<EOF
 #!/bin/bash
-# Main Menu Script
-
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
-NC='\033[0m'
-
 clear
 echo -e "${BLUE}=============================${NC}"
-echo -e "${YELLOW}     VPS MANAGER MENU     ${NC}"
+echo -e "${YELLOW}         MAIN MENU          ${NC}"
 echo -e "${BLUE}=============================${NC}"
 echo -e ""
-echo -e "${GREEN}1${NC}. User Management"
-echo -e "${GREEN}2${NC}. Certificate Management"
-echo -e "${GREEN}3${NC}. Bandwidth Monitor"
-echo -e "${GREEN}4${NC}. Log Viewer"
-echo -e "${GREEN}5${NC}. Limit Configuration"
-echo -e "${GREEN}6${NC}. Port Management"
-echo -e "${GREEN}7${NC}. Domain Settings"
-echo -e "${GREEN}8${NC}. WebSocket Settings"
-echo -e "${GREEN}9${NC}. XRAY Configuration"
-echo -e "${GREEN}10${NC}. SSH Settings"
-echo -e "${GREEN}0${NC}. Exit"
+echo -e "${GREEN}VMESS MENU${NC}"
+echo -e " 1) Add Vmess"
+echo -e " 2) Delete Vmess"
+echo -e " 3) Renew Vmess"
+echo -e " 4) Check Vmess Login"
+echo -e " 5) Trial Vmess"
+echo -e ""
+echo -e "${GREEN}VLESS MENU${NC}"
+echo -e " 6) Add Vless"
+echo -e " 7) Delete Vless"
+echo -e " 8) Renew Vless"
+echo -e " 9) Check Vless Login"
+echo -e "10) Trial Vless"
+echo -e ""
+echo -e "${GREEN}TROJAN MENU${NC}"
+echo -e "11) Add Trojan"
+echo -e "12) Delete Trojan"
+echo -e "13) Renew Trojan"
+echo -e "14) Check Trojan Login"
+echo -e "15) Trial Trojan"
+echo -e ""
+echo -e "${GREEN}SYSTEM MENU${NC}"
+echo -e "16) Check Running Services"
+echo -e "17) Check RAM Usage"
+echo -e "18) Check Version"
+echo -e "19) Check Domain"
+echo -e "20) Check Login Sessions"
+echo -e " 0) Exit"
 echo -e ""
 echo -e "${BLUE}=============================${NC}"
-read -p "Select menu: " menu_option
+read -p "Select menu : " menu_num
 
-case \$menu_option in
-    1) /root/faiz-vpn/menu/user-menu ;;
-    2) /root/faiz-vpn/menu/cert-menu ;;
-    3) /root/faiz-vpn/menu/bandwidth ;;
-    4) /root/faiz-vpn/menu/log ;;
-    5) /root/faiz-vpn/menu/limit ;;
-    6) /root/faiz-vpn/menu/port ;;
-    7) /root/faiz-vpn/menu/domain ;;
-    8) /root/faiz-vpn/menu/ws ;;
-    9) /root/faiz-vpn/menu/xray ;;
-    10) /root/faiz-vpn/menu/ssh ;;
+case \$menu_num in
+    1) add-vmess ;;
+    2) del-vmess ;;
+    3) renew-vmess ;;
+    4) cek-vmess ;;
+    5) trial-vmess ;;
+    6) add-vless ;;
+    7) del-vless ;;
+    8) renew-vless ;;
+    9) cek-vless ;;
+    10) trial-vless ;;
+    11) add-trojan ;;
+    12) del-trojan ;;
+    13) renew-trojan ;;
+    14) cek-trojan ;;
+    15) trial-trojan ;;
+    16) running ;;
+    17) ram ;;
+    18) version ;;
+    19) domain ;;
+    20) login ;;
     0) exit 0 ;;
     *) echo -e "${RED}Invalid option${NC}" ;;
 esac
@@ -129,13 +147,10 @@ EOF
 echo -e "Setting permissions..."
 chmod +x /root/faiz-vpn/menu/*
 
-# Make menu script executable
-chmod +x /root/faiz-vpn/menu/menu
-
-# Create symlink to menu
+# Create menu command symlink
 ln -sf /root/faiz-vpn/menu/menu /usr/local/bin/menu
 
 echo -e ""
 echo -e "${GREEN}Test installation completed!${NC}"
-echo -e "Use ${YELLOW}menu${NC} command to access the management menu"
+echo -e "Type ${YELLOW}menu${NC} to access the main menu"
 echo -e "${BLUE}=============================${NC}"
