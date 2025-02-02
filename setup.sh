@@ -48,21 +48,19 @@ sleep 2
 echo -e "\n${BLUE}[6/7]${NC} Creating menu scripts..."
 
 # Clean up existing menu files
-rm -f /usr/local/bin/{menu,ssh,xray-menu}
-rm -rf /usr/local/bin/menu
+rm -f /usr/local/bin/{menu,ssh,xray}
 
 # Create SSH script
 cat > /usr/local/bin/ssh << 'EOF'
 #!/bin/bash
 # SSH Manager Script
-# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-show_menu() {
+while true; do
     clear
     echo -e "${BLUE}=============================${NC}"
     echo -e "${YELLOW}     SSH MANAGER     ${NC}"
@@ -76,22 +74,26 @@ show_menu() {
     echo -e "${GREEN}6${NC}. Lock/Unlock User"
     echo -e "${GREEN}0${NC}. Back to Main Menu"
     echo -e ""
-}
-# ... rest of the SSH script ...
+    read -p "Select option: " choice
+    case $choice in
+        0) break ;;
+        *) echo -e "${RED}Feature coming soon...${NC}" ;;
+    esac
+    read -n 1 -s -r -p "Press any key to continue"
+done
 EOF
 
 # Create XRAY script
-cat > /usr/local/bin/xray-menu << 'EOF'
+cat > /usr/local/bin/xray << 'EOF'
 #!/bin/bash
 # XRAY Manager Script
-# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-show_menu() {
+while true; do
     clear
     echo -e "${BLUE}=============================${NC}"
     echo -e "${YELLOW}     XRAY MANAGER     ${NC}"
@@ -105,22 +107,26 @@ show_menu() {
     echo -e "${GREEN}6${NC}. Show Config"
     echo -e "${GREEN}0${NC}. Back to Main Menu"
     echo -e ""
-}
-# ... rest of the XRAY script ...
+    read -p "Select option: " choice
+    case $choice in
+        0) break ;;
+        *) echo -e "${RED}Feature coming soon...${NC}" ;;
+    esac
+    read -n 1 -s -r -p "Press any key to continue"
+done
 EOF
 
 # Create main menu script
 cat > /usr/local/bin/menu << 'EOF'
 #!/bin/bash
 # Main Menu Script
-# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-show_menu() {
+while true; do
     clear
     echo -e "${BLUE}=============================${NC}"
     echo -e "${YELLOW}     MAIN MENU     ${NC}"
@@ -133,12 +139,19 @@ show_menu() {
     echo -e "${GREEN}5${NC}. System Settings"
     echo -e "${GREEN}0${NC}. Exit"
     echo -e ""
-}
-# ... rest of the menu script ...
+    read -p "Select option: " choice
+    case $choice in
+        1) ssh ;;
+        2) xray ;;
+        0) break ;;
+        *) echo -e "${RED}Feature coming soon...${NC}" ;;
+    esac
+    read -n 1 -s -r -p "Press any key to continue"
+done
 EOF
 
 # Make scripts executable
-chmod +x /usr/local/bin/{menu,ssh,xray-menu}
+chmod +x /usr/local/bin/{menu,ssh,xray}
 
 # Configure services
 echo -e "\n${BLUE}[7/7]${NC} Configuring services..."
@@ -163,7 +176,7 @@ echo -e "\n${GREEN}Installation completed successfully!${NC}"
 echo -e "\nYou can now use the following commands:"
 echo -e "${YELLOW}menu${NC} - Main menu"
 echo -e "${YELLOW}ssh${NC} - SSH manager"
-echo -e "${YELLOW}xray-menu${NC} - XRAY manager"
+echo -e "${YELLOW}xray${NC} - XRAY manager"
 echo -e "\nDefault ports:"
 echo -e "SSH: 22"
 echo -e "XRAY: 443"
