@@ -1,5 +1,5 @@
 #!/bin/bash
-# Main Installation Script
+# Test Installation Script
 
 # Colors
 RED='\033[0;31m'
@@ -14,100 +14,50 @@ if [ "${EUID}" -ne 0 ]; then
     exit 1
 fi
 
-# Create directories
-mkdir -p /usr/local/bin
-mkdir -p /etc/xray
-mkdir -p /usr/local/etc/xray
-mkdir -p /var/log/xray
-mkdir -p /var/log/nginx
-mkdir -p /etc/slowdns
-mkdir -p /etc/faiz-vpn
-
-# Clone repository
-echo -e "${BLUE}Downloading scripts...${NC}"
-cd /tmp
-rm -rf faiz-vpn-main faiz-vpn.zip
-wget https://github.com/Abdofaiz/faiz-vpn/archive/refs/heads/main.zip -O faiz-vpn.zip
-unzip faiz-vpn.zip
-cd faiz-vpn-main
-
-# Copy files to system
-cp -r menu/* /usr/local/bin/
-cp -r setup/* /usr/local/etc/faiz-vpn/
-cp -r utils/* /usr/local/bin/
-
-# Make scripts executable
-chmod +x /usr/local/bin/*
-
-# Create menu symlinks
-ln -sf /usr/local/bin/user /usr/local/bin/menu-user
-ln -sf /usr/local/bin/cert /usr/local/bin/menu-cert
-ln -sf /usr/local/bin/bandwidth /usr/local/bin/menu-bandwidth
-ln -sf /usr/local/bin/log /usr/local/bin/menu-log
-ln -sf /usr/local/bin/limit /usr/local/bin/menu-limit
-ln -sf /usr/local/bin/port /usr/local/bin/menu-port
-ln -sf /usr/local/bin/domain /usr/local/bin/menu-domain
-ln -sf /usr/local/bin/ws /usr/local/bin/menu-ws
-ln -sf /usr/local/bin/xray /usr/local/bin/menu-xray
-ln -sf /usr/local/bin/ssh /usr/local/bin/menu-ssh
-
-# Create main menu
-cat > /usr/local/bin/menu <<EOF
-#!/bin/bash
 clear
 echo -e "${BLUE}=============================${NC}"
-echo -e "${YELLOW}     VPS MANAGER MENU     ${NC}"
+echo -e "${YELLOW}    TESTING INSTALLATION     ${NC}"
 echo -e "${BLUE}=============================${NC}"
 echo -e ""
-echo -e "${GREEN}1${NC}. User Management"
-echo -e "${GREEN}2${NC}. Certificate Management"
-echo -e "${GREEN}3${NC}. Bandwidth Monitor"
-echo -e "${GREEN}4${NC}. Log Viewer"
-echo -e "${GREEN}5${NC}. Limit Configuration"
-echo -e "${GREEN}6${NC}. Port Management"
-echo -e "${GREEN}7${NC}. Domain Settings"
-echo -e "${GREEN}8${NC}. WebSocket Settings"
-echo -e "${GREEN}9${NC}. XRAY Configuration"
-echo -e "${GREEN}10${NC}. SSH Settings"
-echo -e "${GREEN}0${NC}. Exit"
-echo -e ""
-echo -e "${BLUE}=============================${NC}"
-read -p "Select menu: " menu_option
 
-case \$menu_option in
-    1) menu-user ;;
-    2) menu-cert ;;
-    3) menu-bandwidth ;;
-    4) menu-log ;;
-    5) menu-limit ;;
-    6) menu-port ;;
-    7) menu-domain ;;
-    8) menu-ws ;;
-    9) menu-xray ;;
-    10) menu-ssh ;;
-    0) exit 0 ;;
-    *) echo -e "${RED}Invalid option${NC}" ;;
-esac
+# Create required directories
+echo -e "Creating directories..."
+mkdir -p /etc/xray
+mkdir -p /var/log/xray
+mkdir -p ~/autoscript/menu
+
+# Create dummy config files
+echo -e "Creating test config files..."
+echo "domain.com" > /etc/xray/domain
+echo "1.0.0" > ~/autoscript/version
+
+# Create dummy XRAY config
+cat > /etc/xray/config.json <<EOF
+{
+    "inbounds": [],
+    "outbounds": [],
+    "routing": {},
+    "policy": {}
+}
 EOF
 
-chmod +x /usr/local/bin/menu
+# Create dummy log file
+touch /var/log/xray/access.log
 
-# Run setup scripts
-echo -e "${BLUE}Running setup scripts...${NC}"
-bash /root/faiz-vpn/setup/main-setup.sh
-bash /root/faiz-vpn/ssh/ssh-setup.sh
-bash /root/faiz-vpn/websocket/ws-setup.sh
-bash /root/faiz-vpn/xray/xray-setup.sh
-bash /root/faiz-vpn/openvpn/openvpn-setup.sh
-bash /root/faiz-vpn/l2tp/l2tp-setup.sh
-bash /root/faiz-vpn/slowdns/slowdns-setup.sh
-bash /root/faiz-vpn/udpgw/udpgw-setup.sh
-bash /root/faiz-vpn/backup/backup-setup.sh
-bash /root/faiz-vpn/dropbear/dropbear-setup.sh
+# Create dummy log-install.txt
+cat > /root/log-install.txt <<EOF
+Vmess TLS         : 443
+Vmess None TLS    : 80
+Vless TLS         : 443
+Vless None TLS    : 80
+Trojan WS TLS     : 443
+EOF
 
-# Run tests
-echo -e "${BLUE}Testing installation...${NC}"
-bash /root/faiz-vpn/test-install.sh
+# Make all menu scripts executable
+echo -e "Setting permissions..."
+chmod +x ~/autoscript/menu/*
 
-echo -e "${GREEN}Installation completed!${NC}"
-echo -e "Use ${YELLOW}menu${NC} command to access the management menu" 
+echo -e ""
+echo -e "${GREEN}Test installation completed!${NC}"
+echo -e "You can now test the menu scripts"
+echo -e "${BLUE}=============================${NC}"

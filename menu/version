@@ -1,0 +1,47 @@
+#!/bin/bash
+# Version Check Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+# Check root
+if [ "${EUID}" -ne 0 ]; then
+    echo -e "${RED}Please run as root${NC}"
+    exit 1
+fi
+
+clear
+echo -e "${BLUE}=============================${NC}"
+echo -e "${YELLOW}     VERSION INFORMATION     ${NC}"
+echo -e "${BLUE}=============================${NC}"
+echo -e ""
+
+# Check script version
+if [ -f "/root/autoscript/version" ]; then
+    current_version=$(cat /root/autoscript/version)
+    echo -e "Script Version : ${GREEN}$current_version${NC}"
+else
+    echo -e "Script Version : ${RED}Unknown${NC}"
+fi
+
+# Check XRAY version
+xray_version=$(/usr/local/bin/xray -version | head -n1 | awk '{print $2}')
+echo -e "XRAY Version   : ${GREEN}$xray_version${NC}"
+
+# Check Nginx version
+nginx_version=$(nginx -v 2>&1 | grep -i version | awk '{print $3}' | cut -d/ -f2)
+echo -e "Nginx Version  : ${GREEN}$nginx_version${NC}"
+
+# Check OS version
+os_version=$(cat /etc/os-release | grep "PRETTY_NAME" | cut -d'"' -f2)
+echo -e "OS Version     : ${GREEN}$os_version${NC}"
+
+# Check kernel version
+kernel_version=$(uname -r)
+echo -e "Kernel Version : ${GREEN}$kernel_version${NC}"
+
+echo -e "${BLUE}=============================${NC}" 

@@ -1,0 +1,67 @@
+#!/bin/bash
+# Add SSH User Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+# Check root
+if [ "${EUID}" -ne 0 ]; then
+    echo -e "${RED}Please run as root${NC}"
+    exit 1
+fi
+
+clear
+echo -e "${BLUE}=============================${NC}"
+echo -e "${YELLOW}     CREATE SSH ACCOUNT     ${NC}"
+echo -e "${BLUE}=============================${NC}"
+echo -e ""
+
+# Get user input
+read -p "Username : " Login
+read -p "Password : " Pass
+read -p "Duration (days) : " masaaktif
+
+# Check if user exists
+if getent passwd $Login > /dev/null 2>&1; then
+    echo -e "${RED}Error: User $Login already exists${NC}"
+    exit 1
+fi
+
+# Create expiry date
+exp="$(date -d "$masaaktif days" +"%Y-%m-%d")"
+
+# Add user
+useradd -e `date -d "$masaaktif days" +"%Y-%m-%d"` -s /bin/false -M $Login
+echo -e "$Pass\n$Pass" | passwd $Login &> /dev/null
+
+# Get IPs and ports
+IP=$(curl -sS ipv4.icanhazip.com)
+ssl_port=$(grep -w "ssl" /etc/xray/config.json | awk '{print $2}' | sed 's/,//g' | sed 's/"//g' | head -n1)
+ssh_port=$(grep -w "Port" /etc/ssh/sshd_config | awk '{print $2}' | head -n1)
+
+# Save user info
+echo -e "### $Login $exp" >> /etc/xray/ssh-clients.txt
+
+clear
+echo -e "${BLUE}=============================${NC}"
+echo -e "${YELLOW}     SSH ACCOUNT INFO     ${NC}"
+echo -e "${BLUE}=============================${NC}"
+echo -e ""
+echo -e "Username      : $Login "
+echo -e "Password      : $Pass"
+echo -e "Expired On    : $exp"
+echo -e ""
+echo -e "IP           : $IP"
+echo -e "Host         : $(cat /etc/xray/domain)"
+echo -e "OpenSSH      : $ssh_port"
+echo -e "SSL/TLS      : $ssl_port"
+echo -e "SSH WS       : 80"
+echo -e "SSH WS SSL   : 443"
+echo -e ""
+echo -e "${BLUE}=============================${NC}"
+echo -e "Payload WS   : GET / HTTP/1.1[crlf]Host: $(cat /etc/xray/domain)[crlf]Upgrade: websocket[crlf][crlf]"
+echo -e "${BLUE}=============================${NC}" 

@@ -1,0 +1,41 @@
+#!/bin/bash
+# Show Trojan Config Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+# Check root
+if [ "${EUID}" -ne 0 ]; then
+    echo -e "${RED}Please run as root${NC}"
+    exit 1
+fi
+
+clear
+echo -e "${BLUE}=============================${NC}"
+echo -e "${YELLOW}     TROJAN CONFIG INFO     ${NC}"
+echo -e "${BLUE}=============================${NC}"
+echo -e ""
+
+# Get domain and port
+domain=$(cat /etc/xray/domain)
+tls="$(cat /root/log-install.txt | grep -w "Trojan WS TLS" | cut -d: -f2|sed 's/ //g')"
+
+# Show current config
+echo -e "Domain        : $domain"
+echo -e "Port TLS      : $tls"
+echo -e "Path         : /trojan"
+echo -e "Network      : ws"
+echo -e ""
+echo -e "Format Link:"
+echo -e "${BLUE}=============================${NC}"
+echo -e "trojan://<password>@${domain}:${tls}?path=/trojan&security=tls&host=${domain}&type=ws&sni=${domain}#<username>"
+echo -e "${BLUE}=============================${NC}"
+echo -e ""
+echo -e "Example Link:"
+echo -e "${BLUE}=============================${NC}"
+echo -e "trojan://abc123@${domain}:${tls}?path=/trojan&security=tls&host=${domain}&type=ws&sni=${domain}#user1"
+echo -e "${BLUE}=============================${NC}" 

@@ -1,0 +1,47 @@
+#!/bin/bash
+# Status Menu Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+show_menu() {
+    clear
+    echo -e "${BLUE}=============================${NC}"
+    echo -e "${YELLOW}     STATUS MENU     ${NC}"
+    echo -e "${BLUE}=============================${NC}"
+    echo -e ""
+    echo -e "${GREEN}1${NC}. Running Services" 
+    echo -e "${GREEN}2${NC}. Check Bandwidth"
+    echo -e "${GREEN}3${NC}. Check RAM"
+    echo -e "${GREEN}4${NC}. Speedtest"
+    echo -e "${GREEN}5${NC}. Check CPU"
+    echo -e "${GREEN}6${NC}. Check Port"
+    echo -e "${GREEN}7${NC}. Check Domain"
+    echo -e "${GREEN}8${NC}. Check Version"
+    echo -e "${GREEN}9${NC}. Check Login"
+    echo -e "${GREEN}0${NC}. Back to Main Menu"
+    echo -e ""
+    echo -e "${BLUE}=============================${NC}"
+}
+
+while true; do
+    show_menu
+    read -p "Select option: " choice
+    case $choice in
+        1) running ;;
+        2) vnstat ;;
+        3) ram ;;
+        4) speedtest ;;
+        5) htop ;;
+        6) netstat ;;
+        7) domain ;;
+        8) version ;;
+        9) login ;;
+        0) break ;;
+        *) echo -e "${RED}Invalid option${NC}" ;;
+    esac
+done 

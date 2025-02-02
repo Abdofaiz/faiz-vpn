@@ -1,0 +1,49 @@
+#!/bin/bash
+# Add/Change Domain Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+# Check root
+if [ "${EUID}" -ne 0 ]; then
+    echo -e "${RED}Please run as root${NC}"
+    exit 1
+fi
+
+# Get current domain
+current_domain=$(cat /etc/xray/domain 2>/dev/null)
+echo -e "Current domain: ${YELLOW}$current_domain${NC}"
+
+# Get new domain
+read -p "Enter new domain: " new_domain
+
+# Validate domain
+echo -e "${YELLOW}Checking domain ${new_domain}...${NC}"
+if host $new_domain >/dev/null 2>&1; then
+    echo "$new_domain" > /etc/xray/domain
+    
+    # Update configs
+    sed -i "s/$current_domain/$new_domain/g" /usr/local/etc/xray/config.json
+    sed -i "s/$current_domain/$new_domain/g" /etc/nginx/conf.d/xray.conf
+    
+    # Restart services
+    systemctl restart nginx
+    systemctl restart xray
+    
+    echo -e "${GREEN}Domain changed successfully to $new_domain${NC}"
+    
+    # Ask about SSL
+    read -p "Generate SSL certificate? (y/n): " gen_ssl
+    if [[ $gen_ssl =~ ^[Yy]$ ]]; then
+        certbot certonly --standalone -d $new_domain --email admin@$new_domain --agree-tos --non-interactive
+        systemctl restart nginx
+        systemctl restart xray
+        echo -e "${GREEN}SSL certificate generated${NC}"
+    fi
+else
+    echo -e "${RED}Domain $new_domain is not valid or DNS not propagated${NC}"
+fi 

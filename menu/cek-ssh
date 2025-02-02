@@ -1,0 +1,42 @@
+#!/bin/bash
+# Check SSH Login Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+# Check root
+if [ "${EUID}" -ne 0 ]; then
+    echo -e "${RED}Please run as root${NC}"
+    exit 1
+fi
+
+clear
+echo -e "${BLUE}=============================${NC}"
+echo -e "${YELLOW}     SSH LOGIN MONITOR     ${NC}"
+echo -e "${BLUE}=============================${NC}"
+echo -e ""
+
+if [ -e "/etc/xray/ssh-clients.txt" ]; then
+    echo -e "User         Login      IP Address"
+    echo -e "${BLUE}=============================${NC}"
+    data=( `ps aux | grep -i dropbear | awk '{print $2}'`);
+    
+    for PID in "${data[@]}"
+    do
+        NUM=`cat /var/log/auth.log | grep -i dropbear | grep -i "Password auth succeeded" | grep "dropbear\[$PID\]" | wc -l`;
+        USER=`cat /var/log/auth.log | grep -i dropbear | grep -i "Password auth succeeded" | grep "dropbear\[$PID\]" | awk '{print $10}'`;
+        IP=`cat /var/log/auth.log | grep -i dropbear | grep -i "Password auth succeeded" | grep "dropbear\[$PID\]" | awk '{print $12}'`;
+        if [ $NUM -eq 1 ]; then
+            echo -e "$USER       $NUM           $IP";
+        fi
+    done
+    
+    echo -e "${BLUE}=============================${NC}"
+    echo -e "Total Logins: $NUM"
+else
+    echo -e "${RED}No SSH users found${NC}"
+fi 

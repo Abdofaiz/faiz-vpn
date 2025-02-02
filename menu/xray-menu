@@ -1,0 +1,49 @@
+#!/bin/bash
+# XRAY Menu Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+show_menu() {
+    clear
+    echo -e "${BLUE}=============================${NC}"
+    echo -e "${YELLOW}     XRAY MENU     ${NC}"
+    echo -e "${BLUE}=============================${NC}"
+    echo -e ""
+    echo -e "${GREEN}1${NC}. Create VMESS"
+    echo -e "${GREEN}2${NC}. Create VLESS"
+    echo -e "${GREEN}3${NC}. Create TROJAN"
+    echo -e "${GREEN}4${NC}. Trial VMESS"
+    echo -e "${GREEN}5${NC}. Trial VLESS"
+    echo -e "${GREEN}6${NC}. Trial TROJAN"
+    echo -e "${GREEN}7${NC}. Delete Account"
+    echo -e "${GREEN}8${NC}. Check User Login"
+    echo -e "${GREEN}9${NC}. Extend Account"
+    echo -e "${GREEN}10${NC}. Usage Account"
+    echo -e "${GREEN}0${NC}. Back to Main Menu"
+    echo -e ""
+    echo -e "${BLUE}=============================${NC}"
+}
+
+while true; do
+    show_menu
+    read -p "Select option: " choice
+    case $choice in
+        1) add-vmess ;;
+        2) add-vless ;;
+        3) add-trojan ;;
+        4) trial-vmess ;;
+        5) trial-vless ;;
+        6) trial-trojan ;;
+        7) del-xray ;;
+        8) cek-xray ;;
+        9) renew-xray ;;
+        10) usage-xray ;;
+        0) break ;;
+        *) echo -e "${RED}Invalid option${NC}" ;;
+    esac
+done 

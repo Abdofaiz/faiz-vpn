@@ -1,0 +1,59 @@
+#!/bin/bash
+# Auto Kill Multi Login Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+# Check root
+if [ "${EUID}" -ne 0 ]; then
+    echo -e "${RED}Please run as root${NC}"
+    exit 1
+fi
+
+clear
+echo -e "${BLUE}=============================${NC}"
+echo -e "${YELLOW}   AUTO KILL MULTI LOGIN   ${NC}"
+echo -e "${BLUE}=============================${NC}"
+echo -e ""
+echo -e "${GREEN}1${NC}. Set Auto Kill"
+echo -e "${GREEN}2${NC}. Disable Auto Kill"
+echo -e "${GREEN}3${NC}. View Settings"
+echo -e "${GREEN}0${NC}. Back to Menu"
+echo -e ""
+echo -e "${BLUE}=============================${NC}"
+
+read -p "Select option: " option
+
+case $option in
+    1)
+        read -p "Max Multi Login : " max
+        echo "$max" > /etc/xray/limit-ssh
+        echo "*/1 * * * * root /usr/bin/limit-ssh" > /etc/cron.d/limit-ssh
+        systemctl restart cron
+        echo -e "${GREEN}Auto Kill set to $max logins${NC}"
+        ;;
+    2)
+        rm -f /etc/xray/limit-ssh
+        rm -f /etc/cron.d/limit-ssh
+        systemctl restart cron
+        echo -e "${GREEN}Auto Kill disabled${NC}"
+        ;;
+    3)
+        if [ -f "/etc/xray/limit-ssh" ]; then
+            max=$(cat /etc/xray/limit-ssh)
+            echo -e "Max Multi Login : $max"
+        else
+            echo -e "${RED}Auto Kill is disabled${NC}"
+        fi
+        ;;
+    0)
+        exit 0
+        ;;
+    *)
+        echo -e "${RED}Invalid option${NC}"
+        ;;
+esac 

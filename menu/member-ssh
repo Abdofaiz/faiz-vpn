@@ -1,0 +1,39 @@
+#!/bin/bash
+# List SSH Members Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+# Check root
+if [ "${EUID}" -ne 0 ]; then
+    echo -e "${RED}Please run as root${NC}"
+    exit 1
+fi
+
+clear
+echo -e "${BLUE}=============================${NC}"
+echo -e "${YELLOW}     SSH MEMBER LIST     ${NC}"
+echo -e "${BLUE}=============================${NC}"
+echo -e ""
+
+if [ -e "/etc/xray/ssh-clients.txt" ]; then
+    echo -e "USERNAME          EXPIRED DATE"
+    echo -e "${BLUE}=============================${NC}"
+    while read expired
+    do
+        AKUN="$(echo $expired | cut -d: -f1)"
+        ID="$(echo $expired | grep -v nobody | cut -d: -f3)"
+        exp="$(chage -l $AKUN | grep "Account expires" | awk -F": " '{print $2}')"
+        if [[ $ID -ge 1000 ]]; then
+            printf "%-17s %2s\n" "$AKUN" "$exp"
+        fi
+    done < "/etc/passwd"
+    echo -e "${BLUE}=============================${NC}"
+    echo -e "Total Accounts: $(grep -c -E "^### " "/etc/xray/ssh-clients.txt")"
+else
+    echo -e "${RED}No SSH members found${NC}"
+fi 

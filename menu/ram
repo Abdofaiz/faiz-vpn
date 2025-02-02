@@ -1,0 +1,42 @@
+#!/bin/bash
+# RAM Usage Monitor Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+# Check root
+if [ "${EUID}" -ne 0 ]; then
+    echo -e "${RED}Please run as root${NC}"
+    exit 1
+fi
+
+clear
+echo -e "${BLUE}=============================${NC}"
+echo -e "${YELLOW}     RAM USAGE MONITOR     ${NC}"
+echo -e "${BLUE}=============================${NC}"
+echo -e ""
+
+# Get total RAM
+total=$(free -m | grep Mem: | awk '{print $2}')
+used=$(free -m | grep Mem: | awk '{print $3}')
+free=$(free -m | grep Mem: | awk '{print $4}')
+cached=$(free -m | grep Mem: | awk '{print $6}')
+
+# Calculate percentages
+used_percent=$((used * 100 / total))
+free_percent=$((free * 100 / total))
+cached_percent=$((cached * 100 / total))
+
+echo -e "Total RAM     : ${total} MB"
+echo -e "Used RAM      : ${used} MB (${used_percent}%)"
+echo -e "Free RAM      : ${free} MB (${free_percent}%)"
+echo -e "Cached RAM    : ${cached} MB (${cached_percent}%)"
+echo -e ""
+echo -e "Top 5 RAM-using processes:"
+echo -e "${BLUE}=============================${NC}"
+ps aux | sort -rn -k 4 | head -5 | awk '{print $4"% - "$11}'
+echo -e "${BLUE}=============================${NC}" 

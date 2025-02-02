@@ -1,0 +1,47 @@
+#!/bin/bash
+# Trojan Menu Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+show_menu() {
+    clear
+    echo -e "${BLUE}=============================${NC}"
+    echo -e "${YELLOW}     TROJAN MENU     ${NC}"
+    echo -e "${BLUE}=============================${NC}"
+    echo -e ""
+    echo -e "${GREEN}1${NC}. Create Account"
+    echo -e "${GREEN}2${NC}. Trial Account"
+    echo -e "${GREEN}3${NC}. Extend Account"
+    echo -e "${GREEN}4${NC}. Delete Account"
+    echo -e "${GREEN}5${NC}. Check User Login"
+    echo -e "${GREEN}6${NC}. List Member"
+    echo -e "${GREEN}7${NC}. Delete Expired"
+    echo -e "${GREEN}8${NC}. Check Usage"
+    echo -e "${GREEN}9${NC}. Config Info"
+    echo -e "${GREEN}0${NC}. Back to Main Menu"
+    echo -e ""
+    echo -e "${BLUE}=============================${NC}"
+}
+
+while true; do
+    show_menu
+    read -p "Select option: " choice
+    case $choice in
+        1) add-trojan ;;
+        2) trial-trojan ;;
+        3) renew-trojan ;;
+        4) del-trojan ;;
+        5) cek-trojan ;;
+        6) member-trojan ;;
+        7) delete-expired ;;
+        8) usage-trojan ;;
+        9) config-trojan ;;
+        0) break ;;
+        *) echo -e "${RED}Invalid option${NC}" ;;
+    esac
+done 

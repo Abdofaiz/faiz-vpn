@@ -1,0 +1,47 @@
+#!/bin/bash
+# System Menu Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+show_menu() {
+    clear
+    echo -e "${BLUE}=============================${NC}"
+    echo -e "${YELLOW}     SYSTEM MENU     ${NC}"
+    echo -e "${BLUE}=============================${NC}"
+    echo -e ""
+    echo -e "${GREEN}1${NC}. Change Domain"
+    echo -e "${GREEN}2${NC}. Change Port"
+    echo -e "${GREEN}3${NC}. Change Banner"
+    echo -e "${GREEN}4${NC}. Backup Data"
+    echo -e "${GREEN}5${NC}. Restore Data"
+    echo -e "${GREEN}6${NC}. Webmin Menu"
+    echo -e "${GREEN}7${NC}. Limit Speed"
+    echo -e "${GREEN}8${NC}. Change Password"
+    echo -e "${GREEN}9${NC}. Reboot VPS"
+    echo -e "${GREEN}0${NC}. Back to Main Menu"
+    echo -e ""
+    echo -e "${BLUE}=============================${NC}"
+}
+
+while true; do
+    show_menu
+    read -p "Select option: " choice
+    case $choice in
+        1) change-domain ;;
+        2) change-port ;;
+        3) change-banner ;;
+        4) backup ;;
+        5) restore ;;
+        6) webmin ;;
+        7) limit-speed ;;
+        8) passwd ;;
+        9) reboot ;;
+        0) break ;;
+        *) echo -e "${RED}Invalid option${NC}" ;;
+    esac
+done 

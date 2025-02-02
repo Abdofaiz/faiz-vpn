@@ -1,0 +1,43 @@
+#!/bin/bash
+# Check VMESS User Usage Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+# Check root
+if [ "${EUID}" -ne 0 ]; then
+    echo -e "${RED}Please run as root${NC}"
+    exit 1
+fi
+
+clear
+echo -e "${BLUE}=============================${NC}"
+echo -e "${YELLOW}     VMESS USER USAGE     ${NC}"
+echo -e "${BLUE}=============================${NC}"
+echo -e ""
+
+echo -e "User          Upload      Download"
+echo -e "${BLUE}=============================${NC}"
+
+data=( `cat /etc/xray/config.json | grep '^###' | cut -d ' ' -f 2 | sort | uniq`);
+
+for akun in "${data[@]}"
+do
+    if [[ -z "$akun" ]]; then
+        akun="No username"
+    fi
+    
+    upload=$(grep -w "$akun" /var/log/xray/access.log | awk '{print $3}' | cut -d ':' -f 1 | awk '{sum+=$1} END {print sum}')
+    download=$(grep -w "$akun" /var/log/xray/access.log | awk '{print $3}' | cut -d ':' -f 2 | awk '{sum+=$1} END {print sum}')
+    
+    upload_mib=$(( $upload / 1024 / 1024 ))
+    download_mib=$(( $download / 1024 / 1024 ))
+    
+    printf "%-13s %-10s %-10s\n" "$akun" "${upload_mib}MB" "${download_mib}MB"
+done
+
+echo -e "${BLUE}=============================${NC}" 

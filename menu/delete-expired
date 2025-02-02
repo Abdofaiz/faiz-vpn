@@ -1,0 +1,47 @@
+#!/bin/bash
+# Delete Expired SSH Accounts Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+# Check root
+if [ "${EUID}" -ne 0 ]; then
+    echo -e "${RED}Please run as root${NC}"
+    exit 1
+fi
+
+clear
+echo -e "${BLUE}=============================${NC}"
+echo -e "${YELLOW}   DELETE EXPIRED ACCOUNTS   ${NC}"
+echo -e "${BLUE}=============================${NC}"
+echo -e ""
+
+count=0
+today=$(date +%s)
+
+while read expired
+do
+    AKUN="$(echo $expired | cut -d: -f1)"
+    ID="$(echo $expired | grep -v nobody | cut -d: -f3)"
+    exp="$(chage -l $AKUN | grep "Account expires" | awk -F": " '{print $2}')"
+    
+    if [[ $ID -ge 1000 ]] && [[ ! -z $exp ]]; then
+        expdate=$(date -d "$exp" +%s)
+        if [[ $today -gt $expdate ]]; then
+            printf "%-17s %2s\n" "$AKUN" "$exp"
+            pkill -u $AKUN
+            userdel -f $AKUN
+            sed -i "/\b$AKUN\b/d" /etc/xray/ssh-clients.txt
+            count=$((count+1))
+        fi
+    fi
+done < "/etc/passwd"
+
+echo -e ""
+echo -e "${BLUE}=============================${NC}"
+echo -e "Deleted Accounts : $count"
+echo -e "${BLUE}=============================${NC}" 

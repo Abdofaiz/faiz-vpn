@@ -1,0 +1,55 @@
+#!/bin/bash
+# Running Services Status Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+# Check root
+if [ "${EUID}" -ne 0 ]; then
+    echo -e "${RED}Please run as root${NC}"
+    exit 1
+fi
+
+clear
+echo -e "${BLUE}=============================${NC}"
+echo -e "${YELLOW}     RUNNING SERVICES     ${NC}"
+echo -e "${BLUE}=============================${NC}"
+echo -e ""
+
+# Check XRAY
+status_xray=$(systemctl status xray | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
+if [ "${status_xray}" = "running" ]; then
+    echo -e "XRAY          : ${GREEN}Running${NC}"
+else
+    echo -e "XRAY          : ${RED}Not Running${NC}"
+fi
+
+# Check Nginx
+status_nginx=$(systemctl status nginx | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
+if [ "${status_nginx}" = "running" ]; then
+    echo -e "Nginx         : ${GREEN}Running${NC}"
+else
+    echo -e "Nginx         : ${RED}Not Running${NC}"
+fi
+
+# Check SSH
+status_ssh=$(systemctl status ssh | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
+if [ "${status_ssh}" = "running" ]; then
+    echo -e "SSH           : ${GREEN}Running${NC}"
+else
+    echo -e "SSH           : ${RED}Not Running${NC}"
+fi
+
+# Check Dropbear
+status_dropbear=$(systemctl status dropbear | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
+if [ "${status_dropbear}" = "running" ]; then
+    echo -e "Dropbear      : ${GREEN}Running${NC}"
+else
+    echo -e "Dropbear      : ${RED}Not Running${NC}"
+fi
+
+echo -e "${BLUE}=============================${NC}" 

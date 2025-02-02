@@ -1,0 +1,51 @@
+#!/bin/bash
+# Check Multi Login Script
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+# Check root
+if [ "${EUID}" -ne 0 ]; then
+    echo -e "${RED}Please run as root${NC}"
+    exit 1
+fi
+
+clear
+echo -e "${BLUE}=============================${NC}"
+echo -e "${YELLOW}   MULTI LOGIN CHECK   ${NC}"
+echo -e "${BLUE}=============================${NC}"
+echo -e ""
+
+if [ ! -f "/etc/xray/limit-ssh" ]; then
+    echo -e "${RED}Auto Kill is not enabled${NC}"
+    exit 0
+fi
+
+max=$(cat /etc/xray/limit-ssh)
+echo -e "Max Multi Login : $max"
+echo -e ""
+echo -e "User       Login    Status"
+echo -e "${BLUE}=============================${NC}"
+
+while read user; do
+    user=$(echo $user | cut -d: -f1)
+    if [ -z "$(grep -w "^$user:" /etc/passwd)" ]; then
+        continue
+    fi
+    
+    logins=$(ps -u $user | grep -c sshd)
+    if [ $logins -gt $max ]; then
+        status="${RED}KILLED${NC}"
+        pkill -u $user
+    else
+        status="${GREEN}ALLOWED${NC}"
+    fi
+    
+    printf "%-10s %-8d %b\n" "$user" "$logins" "$status"
+done < <(grep -v "^#" /etc/passwd | grep "/home" | cut -d: -f1)
+
+echo -e "${BLUE}=============================${NC}" 
